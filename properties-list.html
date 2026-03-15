@@ -16,7 +16,7 @@
             padding: 60px 0 40px;
             text-align: center;
             color: white;
-            margin-top: -80px; /* pull under navbar */
+            margin-top: -80px; 
             padding-top: 140px;
         }
         .filter-container {
@@ -76,10 +76,7 @@
                     <option value="" disabled selected>Choose Location...</option>
                     <option value="6th of October">6th of October City</option>
                     <option value="Hadayek October">Hadayek October</option>
-                    <!-- <option value="Sheikh Zayed">Sheikh Zayed</option> -->
                     <option value="Hadayek Al Ahram">Hadayek Al Ahram</option>
-                    <!-- <option value="North Coast">North Coast</option>
-                    <option value="New Capital">New Administrative Capital</option> -->
                 </select>
             </div>
             <div class="search-divider"></div>
@@ -87,7 +84,7 @@
             <div class="modern-search-input-group dropdown-group">
                 <i class="ph ph-money"></i>
                 <div type="button" id="openPriceModalBtn" class="search-select" style="text-align: left; background: transparent; border: none; width: 100%; cursor: pointer; padding-left: 0;">
-                    <span id="mainPriceDisplay" style="color: var(--text-dark); font-size: 1rem;">Max Price...</span>
+                    <span id="mainPriceDisplay" style="color: var(--text-dark); font-size: 1rem;">Price Range...</span>
                 </div>
             </div>
             
@@ -129,23 +126,27 @@
     <div class="modal-overlay" id="priceModal">
         <div class="modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">
-                <h3 style="font-weight: 800; font-size: 1.3rem; color: var(--primary-dark);">Set Your Budget</h3>
+                <h3 style="font-weight: 800; font-size: 1.3rem; color: var(--primary-dark);">Set Price Range</h3>
                 <button id="closePriceModal" style="background: none; border: none; font-size: 1.5rem; color: var(--text-gray); cursor: pointer;"><i class="ri-close-line"></i></button>
             </div>
             
             <div style="text-align: center; margin-bottom: 25px;">
-                <span style="font-size: 0.9rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Selected Maximum</span>
-                <div id="modalPriceDisplay" style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin-top: 5px;">Any</div>
+                <span style="font-size: 0.9rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Selected Range</span>
+                <div id="modalPriceDisplay" style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 5px;">Any Price</div>
             </div>
 
-            <input type="range" id="modalPriceSlider" class="custom-slider" min="60" max="30000000" step="500000" value="30000000">
-            
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-gray); font-weight: 600; margin-top: 10px;">
-                <span>500k EGP</span>
-                <span>30M+ EGP</span>
+            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-gray); margin-bottom: 5px; display: block;">Min Price (EGP)</label>
+                    <input type="number" id="minPriceInput" class="custom-input" placeholder="e.g. 500000" min="0" style="width: 100%; border-radius: 12px; padding: 12px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-gray); margin-bottom: 5px; display: block;">Max Price (EGP)</label>
+                    <input type="number" id="maxPriceInput" class="custom-input" placeholder="e.g. 5000000" min="0" style="width: 100%; border-radius: 12px; padding: 12px;">
+                </div>
             </div>
 
-            <button id="applyPriceBtn" class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Apply Filter</button>
+            <button id="applyPriceBtn" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Apply Filter</button>
         </div>
     </div>
 
@@ -166,51 +167,53 @@
             const resultsCount = document.getElementById('resultsCount');
             
             // =========================================
-            // MODAL & SLIDER UI LOGIC
+            // MODAL & RANGE UI LOGIC
             // =========================================
             const priceModal = document.getElementById('priceModal');
             const openModalBtn = document.getElementById('openPriceModalBtn');
             const closeModalBtn = document.getElementById('closePriceModal');
             const applyPriceBtn = document.getElementById('applyPriceBtn');
             
-            const priceSlider = document.getElementById('modalPriceSlider');
+            const minInput = document.getElementById('minPriceInput');
+            const maxInput = document.getElementById('maxPriceInput');
             const mainDisplay = document.getElementById('mainPriceDisplay');
             const modalDisplay = document.getElementById('modalPriceDisplay');
-            const MAX_SLIDER_VAL = "30000000";
 
-            // Open Modal
             if (openModalBtn) openModalBtn.addEventListener('click', () => priceModal.classList.add('active'));
-            // Close Modal
             if (closeModalBtn) closeModalBtn.addEventListener('click', () => priceModal.classList.remove('active'));
             
-            // Close on outside click
             window.addEventListener('click', (e) => {
                 if (e.target === priceModal) priceModal.classList.remove('active');
             });
 
-            // Update Text Function
-            const updatePriceDisplay = (val) => {
-                if (!priceSlider) return;
-                if (val === MAX_SLIDER_VAL || val === "any" || !val) {
-                    mainDisplay.innerText = "Max Price...";
-                    modalDisplay.innerText = "Any";
-                    priceSlider.value = MAX_SLIDER_VAL;
-                } else {
-                    mainDisplay.innerText = "Up to " + Number(val).toLocaleString() + " EGP";
-                    modalDisplay.innerText = Number(val).toLocaleString() + " EGP";
-                    priceSlider.value = val;
-                }
-            };
-
-            if (priceSlider) {
-                priceSlider.addEventListener('input', (e) => updatePriceDisplay(e.target.value));
+            function formatCompact(num) {
+                if (!num) return "";
+                const val = Number(num);
+                if (val >= 1000000) return (val / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+                if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
+                return val.toLocaleString();
             }
 
-            // APPLY FILTER BUTTON INSIDE MODAL
+            const updatePriceDisplay = (minVal, maxVal) => {
+                minInput.value = minVal;
+                maxInput.value = maxVal;
+
+                let text = "Any Price";
+                if (minVal && maxVal) text = `${formatCompact(minVal)} - ${formatCompact(maxVal)} EGP`;
+                else if (minVal) text = `From ${formatCompact(minVal)} EGP`;
+                else if (maxVal) text = `Up to ${formatCompact(maxVal)} EGP`;
+
+                mainDisplay.innerText = text;
+                modalDisplay.innerText = text;
+            };
+
+            minInput.addEventListener('input', () => updatePriceDisplay(minInput.value, maxInput.value));
+            maxInput.addEventListener('input', () => updatePriceDisplay(minInput.value, maxInput.value));
+
             if (applyPriceBtn) {
                 applyPriceBtn.addEventListener('click', () => {
-                    priceModal.classList.remove('active'); // Close modal
-                    loadProperties(locSelect.value, priceSlider.value); // Trigger Firebase Search
+                    priceModal.classList.remove('active'); 
+                    loadProperties(locSelect.value, minInput.value, maxInput.value); 
                 });
             }
 
@@ -221,15 +224,14 @@
             let savedPropertyIds = new Set();
             let currentProperties = []; 
 
-            // Parse URL parameters if redirected from home page
             const urlParams = new URLSearchParams(window.location.search);
-            const initialLoc = urlParams.get('location');
-            const initialPrice = urlParams.get('price');
+            const initialLoc = urlParams.get('location') || "";
+            const initialMin = urlParams.get('minPrice') || "";
+            const initialMax = urlParams.get('maxPrice') || "";
 
             if (initialLoc && initialLoc !== "null") locSelect.value = initialLoc;
-            updatePriceDisplay(initialPrice); // Snap slider to URL value
+            updatePriceDisplay(initialMin, initialMax); 
 
-            // 1. Auth & Saved States
             onAuthStateChanged(auth, async (user) => {
                 currentUser = user;
                 if (user) {
@@ -243,7 +245,6 @@
                 if (currentProperties.length > 0) renderCards(currentProperties);
             });
 
-            // 2. Render Cards & Heart Logic
             const renderCards = (properties) => {
                 currentProperties = properties; 
                 resultsCount.innerText = `Showing ${properties.length} available listing${properties.length === 1 ? '' : 's'}.`;
@@ -339,8 +340,7 @@
                 });
             };
 
-            // 3. Fetch Data Logic
-            const loadProperties = async (locFilter = "", priceFilter = "") => {
+            const loadProperties = async (locFilter = "", minFilter = "", maxFilter = "") => {
                 feedContainer.innerHTML = `
                     <div class="skeleton-card"></div><div class="skeleton-card"></div>
                     <div class="skeleton-card"></div><div class="skeleton-card"></div>
@@ -363,28 +363,29 @@
 
                     querySnapshot.forEach((doc) => { results.push({ id: doc.id, ...doc.data() }); });
 
-                    // Advanced Smart Text & Number Cleaner
-                    if (priceFilter && priceFilter !== "any" && priceFilter !== MAX_SLIDER_VAL) {
-                        const maxPrice = Number(priceFilter);
-                        
+                    // Advanced MIN & MAX Number Cleaner & Filter
+                    if (minFilter || maxFilter) {
                         results = results.filter(prop => {
                             const rawPriceStr = String(prop.price).toLowerCase();
                             let cleanPrice = 0;
 
                             if (rawPriceStr.includes('million') || rawPriceStr.includes('m')) {
-                                // Handles "1.5 million" or "1m"
                                 const numMatch = rawPriceStr.match(/[0-9]*\.?[0-9]+/);
                                 cleanPrice = numMatch ? parseFloat(numMatch[0]) * 1000000 : 0;
                             } else if (rawPriceStr.includes('thousand') || rawPriceStr.includes('k')) {
-                                // Handles "100 thousand" or "100k"
                                 const numMatch = rawPriceStr.match(/[0-9]*\.?[0-9]+/);
                                 cleanPrice = numMatch ? parseFloat(numMatch[0]) * 1000 : 0;
                             } else {
-                                // Handles standard "100,000" or random text like "100 sosand"
                                 cleanPrice = parseInt(rawPriceStr.replace(/\D/g, ''), 10) || 0;
                             }
                             
-                            return cleanPrice <= maxPrice;
+                            let passesMin = true;
+                            let passesMax = true;
+                            
+                            if (minFilter) passesMin = cleanPrice >= Number(minFilter);
+                            if (maxFilter) passesMax = cleanPrice <= Number(maxFilter);
+                            
+                            return passesMin && passesMax;
                         });
                     }
 
@@ -399,12 +400,12 @@
             };
 
             // Initial load
-            loadProperties(locSelect ? locSelect.value : "", priceSlider ? priceSlider.value : "any");
+            loadProperties(initialLoc, initialMin, initialMax);
 
-            // Filter Button logic (Next to the search bar)
+            // Filter Button logic
             if(filterBtn) {
                 filterBtn.addEventListener('click', () => {
-                    loadProperties(locSelect.value, priceSlider.value);
+                    loadProperties(locSelect.value, minInput.value, maxInput.value);
                 });
             }
 
@@ -412,7 +413,7 @@
             if(clearBtn) {
                 clearBtn.addEventListener('click', () => {
                     if(locSelect) locSelect.value = "";
-                    updatePriceDisplay(MAX_SLIDER_VAL);
+                    updatePriceDisplay("", "");
                     window.history.replaceState({}, document.title, window.location.pathname); // clear URL
                     loadProperties();
                 });

@@ -29,14 +29,6 @@
                 <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
             </a>
             
-            <!-- <div class="nav-search-bar" id="searchBar">
-                <i class="ri-search-line" style="color: var(--text-gray); font-size: 1.1rem;"></i>
-                <input type="text" placeholder="Search by City or Property..." id="navSearchInput">
-                <button id="searchClose" class="search-close-btn">
-                    <i class="ri-close-line"></i>
-                </button>
-            </div> -->
-
             <nav class="nav-menu" id="navMenu">
                 <ul class="nav-links">
                     <li><a href="properties-list.html">Buy</a></li>
@@ -50,9 +42,6 @@
             </nav>
 
             <div class="mobile-controls">
-                <!-- <button id="mobileSearchBtn" class="menu-toggle">
-                    <i class="ri-search-line"></i> 
-                </button> -->
                 <button id="customMenuToggle" class="animated-hamburger">
                     <span></span><span></span><span></span>
                 </button>
@@ -78,10 +67,7 @@
                             <option value="" disabled selected>Choose Location...</option>
                             <option value="6th of October">6th of October City</option>
                             <option value="Hadayek October">Hadayek October</option>
-                            <!-- <option value="Sheikh Zayed">Sheikh Zayed</option> -->
                             <option value="Hadayek Al Ahram">Hadayek Al Ahram</option>
-                            <!-- <option value="North Coast">North Coast</option>
-                            <option value="New Capital">New Administrative Capital</option> -->
                         </select>
                     </div>
 
@@ -90,7 +76,7 @@
                     <div class="modern-search-input-group dropdown-group">
                         <i class="ph ph-money"></i>
                         <div type="button" id="openPriceModalBtn" class="search-select" style="text-align: left; background: transparent; border: none; width: 100%; cursor: pointer; padding-left: 0;">
-                            <span id="mainPriceDisplay" style="color: var(--text-dark); font-size: 1rem;">Max Price...</span>
+                            <span id="mainPriceDisplay" style="color: var(--text-dark); font-size: 1rem;">Price Range...</span>
                         </div>
                     </div>
 
@@ -98,27 +84,11 @@
                         <i class="ri-search-line"></i> <span class="search-btn-text">Search</span>
                     </button>
                 </div>
-
-                <!-- <div class="trending-tags">
-                    <span>Trending:</span>
-                    <button class="trend-btn" onclick="window.location.href='properties-list.html?location=>حدائق +الاهرام<'">حدائق الاهرام</button>
-                    <button class="trend-btn" onclick="window.location.href='properties-list.html?location=New+Cairo'">New Cairo</button>
-                    <button class="trend-btn" onclick="window.location.href='properties-list.html?location=North+Coast'">North Coast</button>
-                </div> -->
             </div>
         </div>
     </div>
 
     <main class="max-w-7xl" style="padding-top: 50px; padding-bottom: 80px;">
-        
-        <!-- <div class="categories-scroll">
-            <div class="cat-pill active"><i class="ph ph-buildings"></i> Apartments</div>
-            <div class="cat-pill"><i class="ph ph-house-line"></i> Villas</div>
-            <div class="cat-pill"><i class="ph ph-storefront"></i> Commercial</div>
-            <div class="cat-pill"><i class="ri-landscape-line"></i> Land</div>
-            <div class="cat-pill"><i class="fa-solid fa-umbrella-beach" style="font-size: 0.9rem;"></i> Chalets</div>
-        </div> -->
-
         <div class="feed-header" style="margin-top: 20px;">
             <div>
                 <h2>Featured Properties</h2>
@@ -148,27 +118,29 @@
     <div class="modal-overlay" id="priceModal">
         <div class="modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">
-                <h3 style="font-weight: 800; font-size: 1.3rem; color: var(--primary-dark);">Set Your Budget</h3>
+                <h3 style="font-weight: 800; font-size: 1.3rem; color: var(--primary-dark);">Set Price Range</h3>
                 <button id="closePriceModal" style="background: none; border: none; font-size: 1.5rem; color: var(--text-gray); cursor: pointer;"><i class="ri-close-line"></i></button>
             </div>
             
             <div style="text-align: center; margin-bottom: 25px;">
-                <span style="font-size: 0.9rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Selected Maximum</span>
-                <div id="modalPriceDisplay" style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin-top: 5px;">Any</div>
+                <span style="font-size: 0.9rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Selected Range</span>
+                <div id="modalPriceDisplay" style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-top: 5px;">Any Price</div>
             </div>
 
-            <input type="range" id="modalPriceSlider" class="custom-slider" min="500000" max="30000000" step="500000" value="30000000">
-            
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-gray); font-weight: 600; margin-top: 10px;">
-                <span>500k EGP</span>
-                <span>30M+ EGP</span>
+            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-gray); margin-bottom: 5px; display: block;">Min Price (EGP)</label>
+                    <input type="number" id="minPriceInput" class="custom-input" placeholder="e.g. 500000" min="0" style="width: 100%; border-radius: 12px; padding: 12px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-gray); margin-bottom: 5px; display: block;">Max Price (EGP)</label>
+                    <input type="number" id="maxPriceInput" class="custom-input" placeholder="e.g. 5000000" min="0" style="width: 100%; border-radius: 12px; padding: 12px;">
+                </div>
             </div>
 
-            <button id="applyPriceBtn" class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Set Budget</button>
+            <button id="applyPriceBtn" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Set Budget</button>
         </div>
     </div>
-
-
     
     <script type="module">
         import { auth, db } from "./almas.js";
@@ -181,17 +153,17 @@
             const locationSelect = document.getElementById('searchLocation');
 
             // =========================================
-            // MODAL & SLIDER UI LOGIC
+            // MODAL & RANGE UI LOGIC
             // =========================================
             const priceModal = document.getElementById('priceModal');
             const openModalBtn = document.getElementById('openPriceModalBtn');
             const closeModalBtn = document.getElementById('closePriceModal');
             const applyPriceBtn = document.getElementById('applyPriceBtn');
             
-            const priceSlider = document.getElementById('modalPriceSlider');
+            const minInput = document.getElementById('minPriceInput');
+            const maxInput = document.getElementById('maxPriceInput');
             const mainDisplay = document.getElementById('mainPriceDisplay');
             const modalDisplay = document.getElementById('modalPriceDisplay');
-            const MAX_SLIDER_VAL = "30000000";
 
             if (openModalBtn) openModalBtn.addEventListener('click', () => priceModal.classList.add('active'));
             if (closeModalBtn) closeModalBtn.addEventListener('click', () => priceModal.classList.remove('active'));
@@ -201,18 +173,30 @@
                 if (e.target === priceModal) priceModal.classList.remove('active');
             });
 
-            if (priceSlider) {
-                priceSlider.addEventListener('input', (e) => {
-                    const val = e.target.value;
-                    if (val === MAX_SLIDER_VAL) {
-                        mainDisplay.innerText = "Max Price...";
-                        modalDisplay.innerText = "Any";
-                    } else {
-                        mainDisplay.innerText = "Up to " + Number(val).toLocaleString() + " EGP";
-                        modalDisplay.innerText = Number(val).toLocaleString() + " EGP";
-                    }
-                });
+            // Format numbers nicely (e.g. 1M or 500k)
+            function formatCompact(num) {
+                if (!num) return "";
+                const val = Number(num);
+                if (val >= 1000000) return (val / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+                if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
+                return val.toLocaleString();
             }
+
+            function updatePriceDisplay() {
+                const min = minInput.value;
+                const max = maxInput.value;
+                
+                let text = "Any Price";
+                if (min && max) text = `${formatCompact(min)} - ${formatCompact(max)} EGP`;
+                else if (min) text = `From ${formatCompact(min)} EGP`;
+                else if (max) text = `Up to ${formatCompact(max)} EGP`;
+
+                mainDisplay.innerText = text;
+                modalDisplay.innerText = text;
+            }
+
+            minInput.addEventListener('input', updatePriceDisplay);
+            maxInput.addEventListener('input', updatePriceDisplay);
 
             // =========================================
             // DATA & AUTH LOGIC
@@ -281,38 +265,6 @@
                             </div>
                         </a>
                     `;
-                    // feedContainer.innerHTML += `
-                    //     <a href="details.html?id=${data.id}" class="p-card">
-                    //         <div class="p-card-img-box">
-                    //             <span class="p-badge ${badgeClass}">For ${data.type}</span>
-                    //             <button class="p-fav-btn feed-save-btn" data-id="${data.id}" style="${activeStyle}" onclick="event.preventDefault();">
-                    //                 <i class="${heartIcon}"></i>
-                    //             </button>
-                    //             <img src="${data.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image'}" alt="${data.title}">
-                    //             <div class="p-price-glass">${Number(data.price).toLocaleString()} EGP</div>
-                    //         </div>
-                    //         <div class="p-card-body">
-                    //             <h3 class="p-card-title">${data.title}</h3>
-                    //             <p class="p-card-loc"><i class="ph ph-map-pin"></i> ${data.location}</p>
-                    //             <div class="p-card-features">
-                    //                 <div class="p-feat">
-                    //                     <div class="p-feat-top"><i class="ph ph-bed"></i> ${data.bedrooms || 0}</div>
-                    //                     <span>Beds</span>
-                    //                 </div>
-                    //                 <div class="p-divider"></div>
-                    //                 <div class="p-feat">
-                    //                     <div class="p-feat-top"><i class="ph ph-bathtub"></i> ${data.bathrooms || 0}</div>
-                    //                     <span>Baths</span>
-                    //                 </div>
-                    //                 <div class="p-divider"></div>
-                    //                 <div class="p-feat">
-                    //                     <div class="p-feat-top"><i class="ph ph-squares-four"></i> ${data.area || 0}m²</div>
-                    //                     <span>Area</span>
-                    //                 </div>
-                    //             </div>
-                    //         </div>
-                    //     </a>
-                    // `;
                 });
                 attachSaveListeners();
             };
@@ -356,7 +308,6 @@
                 });
             };
 
-            // Fetch exactly 5 newest properties
             const loadLatestProperties = async () => {
                 try {
                     const q = query(collection(db, "properties"), orderBy("createdAt", "desc"), limit(5));
@@ -380,10 +331,10 @@
             if(searchBtn) {
                 searchBtn.addEventListener('click', () => {
                     const loc = locationSelect ? locationSelect.value : "";
-                    let price = priceSlider ? priceSlider.value : "any";
-                    if (price === MAX_SLIDER_VAL) price = "any";
+                    const minP = minInput.value || "";
+                    const maxP = maxInput.value || "";
                     
-                    window.location.href = `properties-list.html?location=${encodeURIComponent(loc)}&price=${encodeURIComponent(price)}`;
+                    window.location.href = `properties-list.html?location=${encodeURIComponent(loc)}&minPrice=${encodeURIComponent(minP)}&maxPrice=${encodeURIComponent(maxP)}`;
                 });
             }
         });
