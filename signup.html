@@ -12,7 +12,7 @@
     <header class="header">
         <div class="container navbar">
             <a href="index.html" class="logo">
-                <img src="Almas logo.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <img src="images/Almas logo.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
                 <span style="color: var(--primary-dark);">ALMAS</span>
             </a>
             <div class="nav-actions">
@@ -57,23 +57,22 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="signup-password" class="custom-input" placeholder="Min. 6 chars" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Confirm Password</label>
-                        <div class="input-wrapper">
-                            <i class="fa-solid fa-rotate-right"></i>
-                            <input type="password" id="signup-confirm" class="custom-input" placeholder="Repeat password" required>
-                        </div>
-                    </div>
-                </div>
-                
+ <div class="auth-grid-row">
+    <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="signup-password" class="custom-input" placeholder="Min. 6 chars" required>
+        </div>
+    </div>
+    <div class="input-group">
+        <label class="input-label">Confirm Password</label>
+        <div class="input-wrapper">
+            <i class="fa-solid fa-rotate-right"></i>
+            <input type="password" id="signup-confirm" class="custom-input" placeholder="Repeat password" required>
+        </div>
+    </div>
+</div>
                 <button type="submit" class="btn-submit" style="margin-top: 15px;">
                     Create Account <i class="fa-solid fa-arrow-right"></i>
                 </button>

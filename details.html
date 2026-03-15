@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Details | ALMAS</title>
+       <script src="script.js"></script> 
+    <script type="module" src="almas-load.js"></script> 
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 
     <style>
         /* Fullscreen Image Modal Styles */
@@ -62,29 +65,26 @@
                 <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
             </a>
             
-            <nav class="nav-menu" id="navMenu">
+             <nav class="nav-menu" id="navMenu">
                 <ul class="nav-links">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#">Buy</a></li>
-                    <li><a href="#">Rent</a></li>
-                    <li><a href="#">Commercial</a></li>
+                    <li><a href="properties-list.html">Buy</a></li>
+                    <li><a href="properties-list.html">Rent</a></li>
+                    <li><a href="properties-list.html">Commercial</a></li>
+                    <li><a href="#">New Projects</a></li>
                 </ul>
                 <div class="nav-actions" id="nav-actions-container">
-                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px;"></div>
+                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px; animation: pulse 1.5s infinite;"></div>
                 </div>
             </nav>
-<div class="mobile-controls">
-    <button id="menuToggle" class="animated-hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-</div>
-            <!-- <div class="mobile-controls">
-                <button id="menuToggle" class="menu-toggle" style="background: none; border: none; font-size: 1.8rem; color: var(--primary-dark); cursor: pointer;">
-                    <i class="fa-solid fa-bars"></i>
+
+            <div class="mobile-controls">
+                <button id="mobileSearchBtn" class="menu-toggle">
+                    <i class="ri-search-line"></i> 
                 </button>
-            </div> -->
+                <button id="customMenuToggle" class="animated-hamburger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -248,8 +248,7 @@
         <button id="nextImgBtn" class="modal-btn modal-nav-btn right"><span class="material-icons-round">chevron_right</span></button>
     </div>
 
-    <script src="script.js"></script>
-    <script type="module" src="almas-load.js"></script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script type="module">

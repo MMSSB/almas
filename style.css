@@ -2177,3 +2177,63 @@ ul {
         left: 0;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Specific Signup Grid Row for side-by-side fields */
+.auth-grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Mobile Responsiveness for Auth Pages */
+@media (max-width: 900px) {
+    .auth-page-wrapper {
+        grid-template-columns: 1fr; /* Stacks the hero image above the form */
+        min-height: auto;
+    }
+
+    .auth-image-card {
+        min-height: 300px;
+        padding: 40px 20px;
+        text-align: center;
+        align-items: center; /* Centers the trust badge and text for mobile */
+    }
+
+    .auth-form-side {
+        padding: 40px 24px; /* Reduces large side padding for narrow screens */
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .auth-hero-text h1 {
+        font-size: 2.2rem; /* Scales down the heading size */
+    }
+}
+
+@media (max-width: 600px) {
+    /* Stacks Password and Confirm Password fields vertically on small phones */
+    .auth-grid-row {
+        grid-template-columns: 1fr;
+        gap: 0; /* Let standard input-group margins handle spacing */
+    }
+
+    .auth-header h2 {
+        font-size: 1.8rem; /* Further shrinks the title for small devices */
+    }
+}

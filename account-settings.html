@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Settings | ALMAS</title>
-    
+        <script src="script.js"></script> 
+    <script type="module" src="almas-load.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -193,7 +194,7 @@
                 </div>
                 <nav class="profile-nav">
                     <a href="profile.html" class="profile-link"><i class="ph ph-user"></i> My Profile</a>
-                    <a href="#" class="profile-link"><i class="ph ph-heart"></i> Saved Properties</a>
+                    <a href="saved.html" class="profile-link"><i class="ph ph-heart"></i> Saved Properties</a>
                     <a href="account-settings.html" class="profile-link active"><i class="ph ph-gear"></i> Account Settings</a>
                 </nav>
             </aside>
@@ -306,8 +307,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <script type="module" src="almas-load.js"></script>
+
 
     <script type="module">
         import { auth, db } from "./almas.js";
