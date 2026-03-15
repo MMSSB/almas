@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Build the logged-out UI
             navActions.innerHTML = `
                 <a href="login.html" style="font-weight:600; margin-right:15px; font-size:0.95rem; color: var(--text-dark);">Log In</a>
-                <a href="signup.html" class="btn btn-primary glass-btn">Sign Up</a>
+                <a href="signup.html" class="btn btn-primary glass-btn"><i class="fa-solid fa-user-plus"></i> Sign Up</a>
             `;
         }
     });
