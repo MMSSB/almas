@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Team | ALMAS Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script type="module" src="almas-load.js"></script>
+    <style>
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-card { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading team...</h3>
+    </div>
+    <aside class="sidebar">
+        <div class="logo-area"><div><img src="images/almas.png" alt="Logo"> ALMAS</div></div>
+        <div class="admin-profile">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h4 id="dashUserName">Loading...</h4>
+            <p>Administrator</p>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-btn"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+            <a href="dashboard-properties.html" class="nav-btn"><i class="fa-solid fa-building"></i> Catalog & Ads</a>
+            <a href="dashboard-messages.html" class="nav-btn"><i class="fa-solid fa-envelope"></i> Customer Inbox</a>
+            <a href="dashboard-users.html" class="nav-btn"><i class="fa-solid fa-users"></i> Manage Users</a>
+            <a href="dashboard-team.html" class="nav-btn active"><i class="fa-solid fa-user-shield"></i> Manage Team</a>
+        </div>
+        <button class="logout-btn" id="dashLogoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</button>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2 class="page-title">Team Management</h2>
+        </header>
+
+        <div class="content-body">
+            
+            <div class="glass-card">
+                <h3 style="margin-bottom: 15px; color: var(--primary-dark);">Add New Staff Member</h3>
+                <p style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; background: #fef2f2; padding: 10px; border-radius: 8px; border-left: 3px solid #ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Creating a new user via the dashboard will automatically log you into their account for security purposes. You will need to log back in as Admin afterward.
+                </p>
+                
+                <form id="addEmployeeForm" class="form-grid">
+                    <div class="input-group"><label>Full Name</label><input type="text" id="empName" class="custom-input" placeholder="e.g. Ahmed Hassan" required></div>
+                    <div class="input-group"><label>Email Address</label><input type="email" id="empEmail" class="custom-input" placeholder="ahmed@almas.com" required></div>
+                    <div class="input-group"><label>Temporary Password</label><input type="password" id="empPass" class="custom-input" placeholder="Min 6 characters" required minlength="6"></div>
+                    <div class="input-group"><label>Assign Role</label><select id="empRole" class="custom-input" required><option value="employee">Standard Employee</option><option value="admin">Company Admin</option></select></div>
+                    <div style="grid-column: 1/-1;">
+                        <button type="submit" id="createEmpBtn" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="glass-card">
+                <h3>Active Team Members</h3>
+                <table class="team-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email Address</th>
+                            <th>Role Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamTableBody">
+                        <tr><td colspan="4" style="text-align: center;">Loading team...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <h3 style="margin-bottom: 20px; color: var(--primary-dark);">Edit Team Member</h3>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="editName" class="custom-input">
+            </div>
+            <div class="input-group">
+                <label>Role</label>
+                <select id="editRole" class="custom-input">
+                    <option value="employee">Standard Employee</option>
+                    <option value="admin">Company Admin</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-outline" id="closeEditModal" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" id="saveEditBtn" style="flex: 1;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. STRICT AUTH CHECK (KICKS OUT EMPLOYEES)
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) return window.location.href = "almas-login.html";
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (userDoc.data().role !== 'admin') {
+                    alert("SECURITY ALERT: You do not have permission to view this page.");
+                    return window.location.href = "dashboard.html"; // Kick them out
+                }
+
+                document.getElementById('dashUserName').innerText = userDoc.data().fullName;
+                loadTeamMembers();
+            });
+
+            document.getElementById('dashLogoutBtn').onclick = () => signOut(auth).then(()=>window.location.href="almas-login.html");
+
+            // Variables for Editing
+            let editingUserId = null;
+            const editModal = document.getElementById('editModal');
+            document.getElementById('closeEditModal').onclick = () => editModal.classList.remove('active');
+
+            // 2. LOAD TEAM TABLE
+            async function loadTeamMembers() {
+                const tBody = document.getElementById('teamTableBody');
+                const q = query(collection(db, "users"), where("role", "in", ["admin", "employee"]));
+                const snap = await getDocs(q);
+                
+                tBody.innerHTML = '';
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const badgeClass = data.role === 'admin' ? 'role-admin' : 'role-employee';
+                    
+                    const actionHtml = docSnap.id === auth.currentUser.uid 
+                        ? `<span style="color:var(--text-gray); font-size:0.85rem; font-weight: 700;">Current User</span>`
+                        : `
+                          <div style="display:flex; gap: 8px;">
+                              <button class="btn btn-outline edit-team-btn" style="padding: 6px 12px; font-size: 0.8rem;" data-id="${docSnap.id}" data-name="${data.fullName}" data-role="${data.role}"><i class="fa-solid fa-pen"></i> Edit</button>
+                              <button class="btn btn-danger delete-team-btn" style="padding: 6px 12px; font-size: 0.8rem;" data-id="${docSnap.id}"><i class="fa-solid fa-trash"></i> Revoke</button>
+                          </div>
+                          `;
+
+                    tBody.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 700; color: var(--text-dark);"><i class="fa-solid fa-user-tie" style="color: var(--text-gray); margin-right: 8px;"></i> ${data.fullName}</td>
+                            <td>${data.email}</td>
+                            <td><span class="role-badge ${badgeClass}">${data.role}</span></td>
+                            <td>${actionHtml}</td>
+                        </tr>
+                    `;
+                });
+
+                // Attach Edit Handlers
+                document.querySelectorAll('.edit-team-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        editingUserId = btn.getAttribute('data-id');
+                        document.getElementById('editName').value = btn.getAttribute('data-name');
+                        document.getElementById('editRole').value = btn.getAttribute('data-role');
+                        editModal.classList.add('active');
+                    };
+                });
+
+                // Attach Delete Handlers (With new Firebase Rules, this will work perfectly)
+                // ... inside the delete-team-btn click handler in dashboard-team.html
+// Delete Team Member (revoke access + delete their properties)
+document.querySelectorAll('.delete-team-btn').forEach(btn => {
+    btn.onclick = async () => {
+        const targetUid = btn.getAttribute('data-id');
+        
+        if(confirm("⚠️ DANGER: This will permanently delete ALL properties added by this employee and revoke their dashboard access. Continue?")) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wiping data...';
+            
+            try {
+                // 1. Delete all properties added by this employee
+                const propsQuery = query(collection(db, "properties"), where("addedBy", "==", targetUid));
+                const propsSnap = await getDocs(propsQuery);
+                const deletePromises = propsSnap.docs.map(d => deleteDoc(doc(db, "properties", d.id)));
+                await Promise.all(deletePromises);
+
+                // 2. Mark the user as REVOKED (cannot log in)
+                await updateDoc(doc(db, "users", targetUid), {
+                    role: 'revoked',
+                    status: 'deleted',
+                    fullName: '[Revoked Staff]',
+                    revokedAt: new Date().toISOString()
+                });
+                
+                alert("✅ Employee revoked. All their properties deleted.");
+                loadTeamMembers(); 
+                
+            } catch(e) {
+                console.error("Wipeout Error:", e);
+                alert("❌ Error during wipeout: " + e.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-trash"></i> Revoke';
+            }
+        }
+    }
+});
+// document.querySelectorAll('.delete-team-btn').forEach(btn => {
+//     btn.onclick = async () => {
+//         const targetUid = btn.getAttribute('data-id');
+        
+//         if(confirm("DANGER: This will permanently revoke access and delete ALL data associated with this employee. Proceed?")) {
+//             btn.disabled = true;
+//             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Wiping Data...';
+            
+//             try {
+//                 // 1. Find and Delete all properties added by this employee
+//                 const propsQuery = query(collection(db, "properties"), where("addedBy", "==", targetUid));
+//                 const propsSnap = await getDocs(propsQuery);
+//                 const deletePromises = propsSnap.docs.map(d => deleteDoc(doc(db, "properties", d.id)));
+//                 await Promise.all(deletePromises);
+
+//                 // 2. Delete the User Profile Document
+//                 await deleteDoc(doc(db, "users", targetUid));
+                
+//                 alert("Employee wiped from Firestore. Their login is now disabled for the dashboard.");
+//                 loadTeamMembers(); 
+//             } catch(e) {
+//                 console.error("Wipeout Error:", e);
+//                 alert("Error during wipeout: " + e.message);
+//                 btn.disabled = false;
+//             }
+//         }
+//     }
+// });
+
+                // document.querySelectorAll('.delete-team-btn').forEach(btn => {
+                //     btn.onclick = async () => {
+                //         if(confirm("Are you sure you want to revoke this employee's dashboard access? (This deletes their profile data)")) {
+                //             const originalHtml = btn.innerHTML;
+                //             btn.disabled = true;
+                //             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                //             try {
+                //                 await deleteDoc(doc(db, "users", btn.getAttribute('data-id')));
+                //                 loadTeamMembers(); 
+                //             } catch(e) {
+                //                 console.error(e);
+                //                 alert("Failed to delete. Ensure Firebase Rules are updated.");
+                //                 btn.disabled = false;
+                //                 btn.innerHTML = originalHtml;
+                //             }
+                //         }
+                //     }
+                // });
+            }
+
+            // Save Edited User
+            document.getElementById('saveEditBtn').onclick = async () => {
+                if(!editingUserId) return;
+                const newName = document.getElementById('editName').value.trim();
+                const newRole = document.getElementById('editRole').value;
+                const btn = document.getElementById('saveEditBtn');
+                btn.innerHTML = "Saving..."; btn.disabled = true;
+
+                try {
+                    await updateDoc(doc(db, "users", editingUserId), {
+                        fullName: newName,
+                        role: newRole
+                    });
+                    editModal.classList.remove('active');
+                    loadTeamMembers();
+                } catch(e) {
+                    console.error(e);
+                    alert("Failed to update user.");
+                } finally {
+                    btn.innerHTML = "Save Changes"; btn.disabled = false;
+                }
+            };
+
+            // 3. CREATE EMPLOYEE ACCOUNT
+            const empBtn = document.getElementById('createEmpBtn');
+            document.getElementById('addEmployeeForm').onsubmit = async (e) => {
+                e.preventDefault();
+                empBtn.disabled = true;
+                empBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+                const name = document.getElementById('empName').value.trim();
+                const email = document.getElementById('empEmail').value.trim();
+                const pass = document.getElementById('empPass').value;
+                const role = document.getElementById('empRole').value;
+
+                try {
+                    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "users", userCred.user.uid), {
+                        fullName: name, email: email, role: role, createdAt: serverTimestamp()
+                    });
+
+                    alert(`Success! Account created for ${name}. \n\nYou have been logged into their account. Please log out and sign back in as Admin.`);
+                    window.location.href = "dashboard.html";
+
+                } catch (error) {
+                    console.error(error);
+                    alert("Error: " + error.message);
+                    empBtn.disabled = false;
+                    empBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+                }
+            };
+        });
+        const deleteAccountCompletely = async () => {
+    const user = auth.currentUser;
+    
+    if (confirm("This will delete your login email and all data forever. Continue?")) {
+        try {
+            const uid = user.uid;
+
+            // 1. Wipe Firestore Data
+            await deleteDoc(doc(db, "users", uid));
+
+            // 2. Wipe Authentication Record (ONLY works for the currently logged in person)
+            await user.delete();
+
+            alert("Account fully destroyed.");
+            window.location.href = "index.html";
+        } catch (error) {
+            if (error.code === 'auth/requires-recent-login') {
+                alert("For security, please Log Out and Log In again before deleting your account.");
+            }
+        }
+    }
+};
+// Add this to your Global Auth Check (index.html, dashboard.html, etc.)
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        
+        // If the Auth exists but the Firestore Profile is gone (Deleted by Admin)
+        if (!userDoc.exists()) {
+            console.log("This account has been revoked by ALMAS Admin.");
+            await signOut(auth); // Force Logout
+            window.location.href = "almas-login.html?error=revoked";
+            return;
+        }
+    }
+});
+
+    </script>
+</body>
+</html>

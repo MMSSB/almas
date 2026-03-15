@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | ALMAS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .settings-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+        }
+
+        .settings-header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .settings-header h2 {
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+        }
+
+        .settings-header p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Form Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-full-width {
+            grid-column: 1 / -1;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Input Styles */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+            background: var(--white);
+        }
+        .input-wrapper.disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .input-wrapper i {
+            color: var(--text-gray);
+            margin-right: 12px;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+        .input-wrapper:focus-within i {
+            color: var(--primary);
+        }
+        .custom-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-family: inherit;
+        }
+        .custom-input:disabled {
+            cursor: not-allowed;
+            color: #64748b;
+        }
+        textarea.custom-input {
+            resize: vertical;
+            min-height: 100px;
+            padding-top: 5px;
+        }
+        .input-wrapper.textarea-wrapper {
+            align-items: flex-start;
+        }
+        .input-wrapper.textarea-wrapper i {
+            margin-top: 5px;
+        }
+        
+        /* Dropdown overrides */
+        select.custom-input {
+            appearance: none;
+            cursor: pointer;
+        }
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="almas-theme">
+
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading ALMAS...</h3>
+    </div>
+
+    <header class="header glass-header">
+        <div class="container navbar" style="position: relative;">
+            <a href="index.html" class="logo">
+                <img src="images/almas.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Buy</a></li>
+                    <li><a href="#">Rent</a></li>
+                </ul>
+                <div class="nav-actions" id="nav-actions-container">
+                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px; animation: pulse 1.5s infinite;"></div>
+                </div>
+            </nav>
+
+            <div class="mobile-controls">
+                <button id="customMenuToggle" class="animated-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container profile-container">
+        <div class="profile-layout">
+            
+            <aside class="profile-sidebar">
+                <div class="user-mini-card">
+                    <div class="user-avatar-large">
+                        <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=0ea5e9&color=fff" alt="User Avatar">
+                    </div>
+                    <h3 id="sidebarName" style="font-weight: 700; color: var(--text-dark); margin-bottom: 5px;">Loading...</h3>
+                    <div id="sidebarRole" style="display: inline-block; padding: 4px 12px; background: var(--primary-light); color: var(--primary-dark); border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">User</div>
+                </div>
+                <nav class="profile-nav">
+                    <a href="profile.html" class="profile-link"><i class="ph ph-user"></i> My Profile</a>
+                    <a href="#" class="profile-link"><i class="ph ph-heart"></i> Saved Properties</a>
+                    <a href="account-settings.html" class="profile-link active"><i class="ph ph-gear"></i> Account Settings</a>
+                </nav>
+            </aside>
+
+            <div class="dash-main">
+                
+                <div class="settings-card">
+                    <div class="settings-header">
+                        <h2>Personal Information</h2>
+                        <p>Update your details and how agents can contact you.</p>
+                    </div>
+
+                    <form id="settingsForm">
+                        <div class="form-grid">
+                            
+                            <div class="input-group">
+                                <label class="input-label">Full Name</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-user"></i>
+                                    <input type="text" id="editName" class="custom-input" placeholder="Enter your full name" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Email Address</label>
+                                <div class="input-wrapper disabled">
+                                    <i class="ph ph-envelope-simple"></i>
+                                    <input type="email" id="editEmail" class="custom-input" disabled title="Email cannot be changed here">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Phone Number</label>
+                                <div class="input-wrapper">
+                                    <i class="ph ph-phone"></i>
+                                    <input type="tel" id="editPhone" class="custom-input" placeholder="e.g. 010xxxxxxxx">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">WhatsApp Number</label>
+                                <div class="input-wrapper">
+                                    <i class="fab fa-whatsapp"></i>
+                                    <input type="tel" id="editWhatsapp" class="custom-input" placeholder="e.g. 2010xxxxxxxx">
+                                </div>
+                            </div>
+
+                            <div class="input-group form-full-width">
+                                <label class="input-label">Preferred Location</label>
+                                <div class="input-wrapper select-wrapper">
+                                    <i class="ph ph-map-pin"></i>
+                                    <select id="editLocation" class="custom-input">
+                                        <option value="" disabled selected>Where are you looking to buy/rent?</option>
+                                        <option value="6th of October">6th of October City</option>
+                                        <option value="Sheikh Zayed">Sheikh Zayed</option>
+                                        <option value="New Cairo">New Cairo</option>
+                                        <option value="North Coast">North Coast</option>
+                                        <option value="New Capital">New Administrative Capital</option>
+                                        <option value="Anywhere">Anywhere in Egypt</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="input-group form-full-width">
+                                <label class="input-label">About Me (Bio)</label>
+                                <div class="input-wrapper textarea-wrapper">
+                                    <i class="ph ph-text-align-left"></i>
+                                    <textarea id="editBio" class="custom-input" placeholder="E.g., I am looking for a 3-bedroom apartment near my university..."></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div style="margin-top: 25px;">
+                            <button type="submit" id="saveBtn" class="btn btn-primary" style="padding: 14px 30px; border-radius: 12px; width: 100%; font-size: 1rem;">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="settings-card">
+                    <div class="settings-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 15px;">
+                        <h2>Account Security</h2>
+                        <p>Manage your password and account access.</p>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h4 style="font-weight: 700; color: var(--text-dark); margin-bottom: 5px;">Password</h4>
+                            <p style="color: var(--text-gray); font-size: 0.85rem;">A secure link will be sent to your email to reset your password.</p>
+                        </div>
+                        <button id="resetPasswordBtn" class="btn btn-outline" style="border-color: var(--primary); color: var(--primary);">
+                            <i class="ph ph-lock-key"></i> Reset Password
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer style="background: white; border-top: 1px solid var(--border); padding: 40px 0; margin-top: auto;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/almas.png" alt="Logo" style="width: 35px;">
+                <span style="font-weight: 800; color: var(--primary-dark); font-size: 1.2rem;">ALMAS</span>
+            </div>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">© 2026 ALMAS Real Estate Marketplace. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script type="module" src="almas-load.js"></script>
+
+    <script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let currentUserUid = null;
+            let currentUserEmail = null;
+
+            // 1. Load User Data
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserUid = user.uid;
+                    currentUserEmail = user.email;
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const data = userDoc.data();
+                            
+                            // Populate Inputs
+                            document.getElementById('editName').value = data.fullName || "";
+                            document.getElementById('editEmail').value = user.email || "";
+                            document.getElementById('editPhone').value = data.phone || "";
+                            document.getElementById('editWhatsapp').value = data.whatsapp || "";
+                            if(data.location) document.getElementById('editLocation').value = data.location;
+                            document.getElementById('editBio').value = data.bio || "";
+                            
+                            // Populate Sidebar
+                            const fullName = data.fullName || "User";
+                            document.getElementById('sidebarName').innerText = fullName;
+                            document.getElementById('sidebarRole').innerText = "User";
+                            document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0ea5e9&color=fff`;
+                        }
+                    } catch (error) {
+                        console.error("Error fetching profile data:", error);
+                    } finally {
+                        // Hide global loader once data is retrieved
+                        if (window.hideAlmasLoader) window.hideAlmasLoader();
+                    }
+                } else {
+                    window.location.href = "login.html"; // Redirect if not logged in
+                }
+            });
+
+            // 2. Handle Form Submission
+            const settingsForm = document.getElementById('settingsForm');
+            const saveBtn = document.getElementById('saveBtn');
+
+            settingsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (!currentUserUid) return;
+
+                // UI Loading State
+                const originalBtnText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+                saveBtn.disabled = true;
+
+                // Get values
+                const updatedName = document.getElementById('editName').value.trim();
+                const updatedPhone = document.getElementById('editPhone').value.trim();
+                const updatedWhatsapp = document.getElementById('editWhatsapp').value.trim();
+                const updatedLocation = document.getElementById('editLocation').value;
+                const updatedBio = document.getElementById('editBio').value.trim();
+
+                try {
+                    // Update Firestore Database
+                    await updateDoc(doc(db, "users", currentUserUid), {
+                        fullName: updatedName,
+                        phone: updatedPhone,
+                        whatsapp: updatedWhatsapp,
+                        location: updatedLocation,
+                        bio: updatedBio
+                    });
+
+                    // Update UI Sidebar to reflect changes immediately
+                    document.getElementById('sidebarName').innerText = updatedName;
+                    document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(updatedName)}&background=0ea5e9&color=fff`;
+
+                    alert("Profile updated successfully!");
+
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert("An error occurred while saving your changes. Please try again.");
+                } finally {
+                    // Restore button state
+                    saveBtn.innerHTML = originalBtnText;
+                    saveBtn.disabled = false;
+                }
+            });
+
+            // 3. Handle Password Reset
+            const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+            resetPasswordBtn.addEventListener('click', async () => {
+                if (!currentUserEmail) return;
+
+                resetPasswordBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+                resetPasswordBtn.disabled = true;
+
+                try {
+                    await sendPasswordResetEmail(auth, currentUserEmail);
+                    alert(`A password reset link has been sent to ${currentUserEmail}. Please check your inbox.`);
+                } catch (error) {
+                    console.error("Error sending reset email:", error);
+                    alert("Failed to send reset email. " + error.message);
+                } finally {
+                    resetPasswordBtn.innerHTML = '<i class="ph ph-lock-key"></i> Reset Password';
+                    resetPasswordBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

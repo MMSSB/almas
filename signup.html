@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Almas Developments</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="Almas logo.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <span style="color: var(--primary-dark);">ALMAS</span>
+            </a>
+            <div class="nav-actions">
+                <a href="login.html" style="font-weight:600; margin-right:15px; font-size:0.9rem;">Log In</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="auth-page-wrapper">
+        <div class="auth-image-card" style="background-image: linear-gradient(to bottom, rgba(3, 105, 161, 0.4), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');">
+            <div>
+                <div class="trust-badge">
+                    <i class="fa-solid fa-key"></i> Unlock Premium Listings
+                </div>
+                <div class="auth-hero-text" style="margin-top: 30px;">
+                    <h1>Find your perfect property today.</h1>
+                    <p>Browse thousands of verified homes, apartments, and commercial spaces.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h2>Create your account</h2>
+                <p>Already have an account? <a href="login.html" style="color: var(--primary);">Log In</a></p>
+            </div>
+
+            <form id="signup-form">
+                <div class="input-group">
+                    <label class="input-label">Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="signup-name" class="custom-input" placeholder="e.g. Ahmed Hassan" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="signup-email" class="custom-input" placeholder="name@example.com" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="signup-password" class="custom-input" placeholder="Min. 6 chars" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <input type="password" id="signup-confirm" class="custom-input" placeholder="Repeat password" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit" style="margin-top: 15px;">
+                    Create Account <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

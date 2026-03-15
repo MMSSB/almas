@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - Nutra Egypt</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script> -->
+    
+    <!-- <style>
+        /* Stop accidental overflow */
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+       
+    </style> -->
+</head>
+<body>
+
+    <header class="header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <i class="fa-brands fa-gripfire"></i>
+                <span>NUTRA EGYPT</span>
+            </a>
+
+            <!-- <div class="search-bar" id="searchBar">
+                <i class="fa-solid fa-magnifying-glass" style="left: 20px;"></i>
+                <input type="text" placeholder="Search ">
+            </div> -->
+
+            <div class="mobile-controls">
+                <!-- <button class="mobile-search-btn" id="mobileSearchBtn"><i class="fa-solid fa-magnifying-glass"></i></button> -->
+                <button class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+            </div>
+
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="product.html">Shop Categories</a></li>
+                    <li><a href="#">Best Sellers</a></li>
+                    <li><a href="#">Bulk Orders</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <div id="auth-state">
+                        <a href="login.html" style="font-weight: 600; font-size: 0.9rem; margin-right: 5px;">Log In</a>
+                    </div>
+                    <span style="color: #e5e7eb;">|</span>
+                    <a href="cart.html" class="nav-link"><i class="fa-solid fa-cart-shopping"></i></a>
+                    <a href="profile.html" class="nav-link" style="color: var(--primary);"><i class="fa-solid fa-circle-user"></i></a>
+                    
+                </div>
+                <!-- Add this in your header/navbar -->
+
+            </nav>
+        </div>
+    </header>
+
+    <div class="container profile-container">
+        
+        <div class="cart-breadcrumbs" style="margin-bottom: 20px;">
+            <a href="index.html">Home</a> 
+            <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; line-height: 2;"></i>
+            <a href="profile.html">Dashboard</a>
+            <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; line-height: 2;" ></i>
+            <span class="breadcrumb-active">Account Settings</span>
+        </div>
+
+        <div class="profile-layout">
+            
+            <aside class="profile-sidebar">
+                <div class="user-mini-card">
+                    <div class="user-avatar-large">
+                        <img id="sidebar-avatar" src="https://ui-avatars.com/api/?name=User" alt="User">
+                    </div>
+                    <div>
+                        <div id="sidebar-name" class="user-name">Loading...</div>
+                        <div id="sidebar-email" class="user-email">...</div>
+                    </div>
+                </div>
+                <div class="profile-nav">
+                    <a href="profile.html" class="profile-link"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+                    <a href="#" class="profile-link"><i class="fa-solid fa-box-open"></i> My Orders</a>
+                    <a href="account.html" class="profile-link active"><i class="fa-solid fa-gear"></i> Account Settings</a>
+                    <a href="#" class="profile-link"><i class="fa-regular fa-credit-card"></i> Payment Methods</a>
+                </div>
+            </aside>
+
+            <main>
+                <div class="settings-header">
+                    <h2>Account Settings</h2>
+                    <p style="color: var(--text-gray);">Manage your personal details and security preferences.</p>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-head">
+                        <div>
+                            <h3>Personal Information</h3>
+                            <p>Update your photo and personal details.</p>
+                        </div>
+                    </div>
+
+                    <div class="avatar-upload-wrapper">
+                        <div class="avatar-preview">
+                            <img id="settings-avatar-preview" src="https://ui-avatars.com/api/?name=User" alt="Avatar">
+                        </div>
+                        <div class="upload-actions">
+                            <button id="btn-change-photo" class="btn-small">Change Photo</button>
+                        </div>
+                    </div>
+
+                    <form id="profile-form" class="form-grid">
+                        <div class="input-group">
+                            <label class="input-label">Full Name</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-user"></i>
+                                <input type="text" id="input-fullname" class="custom-input" placeholder="Loading...">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Phone Number</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="tel" id="input-phone" class="custom-input" placeholder="+20...">
+                            </div>
+                        </div>
+                        
+                        <div class="form-full" style="text-align: right; margin-top: 10px;">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+<div class="settings-section">
+    <div class="section-head">
+        <div>
+            <h3>Address Book</h3>
+            <p>Manage your shipping and billing addresses.</p>
+        </div>
+        <button id="btn-add-address" class="btn-small"><i class="fa-solid fa-plus"></i> Add New</button>
+    </div>
+
+    <div class="address-grid" id="address-grid">
+        <p style="color:var(--text-gray);">Loading addresses...</p>
+    </div>
+</div>
+
+                <!-- <div class="settings-section">
+                    <div class="section-head">
+                        <div>
+                            <h3>Address Book</h3>
+                            <p>Manage your shipping and billing addresses.</p>
+                        </div>
+                        <button class="btn-small"><i class="fa-solid fa-plus"></i> Add New</button>
+                    </div>
+
+                    <div class="address-grid">
+                        <div class="address-card">
+                            <span class="address-tag default">Default Home</span>
+                            <div style="font-weight: 700; margin-bottom: 5px; font-size: 0.95rem;">Ahmed Hassan</div>
+                            <div style="font-size: 0.9rem; color: var(--text-gray); line-height: 1.5; margin-bottom: 5px;">
+                                Villa 15, Street 90<br>Fifth Settlement<br>Cairo, Egypt
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-gray);">+20 123 456 7890</div>
+                            <div class="address-actions">
+                                <span class="link-btn"><i class="fa-solid fa-pen"></i> Edit</span>
+                                <span class="link-btn delete"><i class="fa-solid fa-trash"></i> Delete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+<!-- Add this to your settings.html in the appropriate section -->
+<div class="settings-section">
+    <div class="section-head">
+        <div>
+            <h3>Theme Preferences</h3>
+            <p>Customize how the website looks</p>
+        </div>
+    </div>
+    
+    <!-- <div class="theme-selector">
+        <div class="theme-option active" data-theme="system">
+            <div class="theme-preview system-theme">
+                <div class="theme-preview-header">
+                    <span class="theme-dot light"></span>
+                    <span class="theme-dot dark"></span>
+                </div>
+                <div class="theme-preview-body">
+                    <div class="preview-light"></div>
+                    <div class="preview-dark"></div>
+                </div>
+            </div>
+            <div class="theme-info">
+                <h4>System Default</h4>
+                <p>Follows your device settings</p>
+            </div>
+            <div class="theme-check">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        
+        <div class="theme-option" data-theme="light">
+            <div class="theme-preview light-theme">
+                <div class="theme-preview-header">
+                    <span class="theme-dot sun"></span>
+                </div>
+                <div class="theme-preview-body">
+                    <div class="preview-light-full"></div>
+                </div>
+            </div>
+            <div class="theme-info">
+                <h4>Light Mode</h4>
+                <p>Clean and bright interface</p>
+            </div>
+            <div class="theme-check">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        
+        <div class="theme-option" data-theme="dark">
+            <div class="theme-preview dark-theme">
+                <div class="theme-preview-header">
+                    <span class="theme-dot moon"></span>
+                </div>
+                <div class="theme-preview-body">
+                    <div class="preview-dark-full"></div>
+                </div>
+            </div>
+            <div class="theme-info">
+                <h4>Dark Mode</h4>
+                <p>Easy on the eyes at night</p>
+            </div>
+            <div class="theme-check">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+    </div>
+</div> -->
+                <div class="settings-section">
+                    <div class="section-head">
+                        <div>
+                            <h3>Security & Login</h3>
+                            <p>Change your password and secure your account.</p>
+                        </div>
+                    </div>
+
+<form id="password-form" autocomplete="off">
+                        <div class="form-grid">
+                            <div class="input-group form-full">
+                                <label class="input-label">Current Password <span style="color:red">*</span></label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-lock"></i>
+                                    <input type="password" id="current-password" class="custom-input" placeholder="Required for verification"  autocomplete="off" required>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">New Password</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-key"></i>
+                                    <input type="password" id="new-password" class="custom-input" placeholder="Min 6 chars" required>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Confirm New Password</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-key"></i>
+                                    <input type="password" id="confirm-password" class="custom-input" placeholder="Repeat password" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-top: 10px;">
+                            <button type="submit" id="btn-update-password" class="btn btn-primary">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- <div class="settings-section">
+                    <div class="section-head">
+                        <div>
+                            <h3>Notifications</h3>
+                            <p>Choose what updates you want to receive.</p>
+                        </div>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.95rem;">Order Updates</div>
+                            <div style="font-size: 0.85rem; color: var(--text-gray);">Get notified about shipping status and delivery.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div> -->
+
+<div class="settings-section danger-zone">
+                    <div class="section-head">
+                        <div>
+                            <h3>Delete Account</h3>
+                            <p>Once you delete your account, there is no going back.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <p style="font-size: 0.9rem; color: #7f1d1d; max-width: 500px;">
+                            Deleting your account will remove all your order history, saved addresses, and Nutra Points. This action cannot be undone.
+                        </p>
+                        <button id="btn-delete-init" class="btn btn-small" style="background: #fee2e2; color: #b91c1c; border-color: #fca5a5;">Delete My Account</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="avatarModal">
+        <div class="modal-card">
+            <h3 style="margin-bottom: 5px;">Choose an Avatar</h3>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">Select a profile picture that matches your vibe.</p>
+            
+            <div class="avatar-grid" id="avatarGrid">
+                </div>
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="btn-cancel-modal" class="btn-outline" style="border-radius: 8px; padding: 8px 16px;">Cancel</button>
+                <button id="btn-save-avatar" class="btn-primary" style="border-radius: 8px; padding: 8px 16px;">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="brand-col">
+                    <a href="#" class="logo"><i class="fa-brands fa-gripfire"></i><span>NUTRA EGYPT</span></a>
+                    <p>Your #1 source for premium supplements and nutrition in Egypt. Authentic products, fast delivery.</p>
+                </div>
+                <div class="footer-col"><h4>Shop</h4><ul><li><a href="#">Protein</a></li><li><a href="#">Vitamins</a></li></ul></div>
+                <div class="footer-col"><h4>Support</h4><ul><li><a href="#">Contact Us</a></li><li><a href="#">FAQs</a></li></ul></div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fa-solid fa-phone" style="margin-right: 8px; color: var(--primary);"></i> +20 123 456 7890</li>
+                        <li><i class="fa-solid fa-envelope" style="margin-right: 8px; color: var(--primary);"></i> support@nutra.eg</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Nutra Egypt. All rights reserved.</p>
+                <div class="payment-icons"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i></div>
+            </div>
+        </div>
+    </footer>
+<div class="modal-overlay" id="avatarModal">
+        <div class="modal-card">
+            <h3>Choose an Avatar</h3>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">Select a profile picture that matches your vibe.</p>
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="btn-cancel-modal" class="btn-outline" style="border-radius: 8px;">Cancel</button>
+                <button id="btn-save-avatar" class="btn-primary" style="border-radius: 8px;">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-card" style="border: 2px solid #ef4444;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #ef4444; margin-bottom: 15px;"></i>
+                <h3 style="color: #b91c1c; font-size: 1.5rem;">Are you absolutely sure?</h3>
+                <p style="color: #4b5563; margin-top: 10px;">
+                    This action creates a permanent deletion of your account (<strong><span id="delete-user-email"></span></strong>). 
+                    Please enter your password to confirm.
+                </p>
+            </div>
+            
+            <div class="input-wrapper" style="margin-bottom: 20px;">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="delete-confirm-password" class="custom-input" placeholder="Enter your password to confirm" style="border-color: #fca5a5;">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-cancel-delete" class="btn-outline" style="flex:1; border: 1px solid #b4b4b4; border-radius: 99px; cursor: pointer;">Cancel</button>
+                <button id="btn-confirm-delete" class="btn-primary" style="flex:1;  background: #dc2626; border-radius: 99px;  border: none;     box-shadow: 0 4px 6px rgba(101, 163, 13, 0.2);
+ padding: 10px 24px;">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+
+
+
+<div class="modal-overlay" id="addressModal">
+    <div class="modal-card address-modal-card">
+        <div class="modal-header">
+            <h3>Add Delivery Address</h3>
+            <button id="btn-close-address" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="modal-body">
+            
+            <div class="map-wrapper">
+                <button type="button" id="btn-locate-me" class="btn-locate">
+                    <i class="fa-solid fa-location-crosshairs" style="color:var(--primary);"></i> Use My Current Location
+                </button>
+                
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+
+                <div class="map-instructions">
+                    <i class="fa-solid fa-circle-info"></i> 
+                    <span>Drag the map to pin your exact building entrance.</span>
+                </div>
+            </div>
+
+            <form id="address-form" class="address-form-col">
+                <div class="modern-input-group">
+                    <label>Label (e.g. Home, Office)</label>
+                    <input type="text" id="addr-label" class="modern-input" placeholder="Home" required>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div class="modern-input-group">
+                        <label>Receiver Name</label>
+                        <input type="text" id="addr-name" class="modern-input" required>
+                    </div>
+                    <div class="modern-input-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="addr-phone" class="modern-input" required>
+                    </div>
+                </div>
+
+                <div class="modern-input-group">
+                    <label>Detailed Address</label>
+                    <textarea id="addr-details" class="modern-input" rows="3" placeholder="Street name, Building number, Floor, Apt..." required></textarea>
+                </div>
+
+                <div class="modern-input-group">
+                    <label>City / Area</label>
+                    <input type="text" id="addr-city" class="modern-input" readonly style="background:#f3f4f6; color:#6b7280; cursor:not-allowed;">
+                </div>
+
+                <input type="hidden" id="addr-lat">
+                <input type="hidden" id="addr-lng">
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" id="btn-cancel-add" style="border-radius:8px;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="border-radius:8px; padding:10px 25px;">Save Address</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    
+    <script type="module" src="script.js"></script>
+    <script type="module" src="account.js"></script>
+    <script  src="toast.js"></script>
+</body>
+</html>
+
+
+    

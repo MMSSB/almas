@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Properties | ALMAS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .page-header-bg {
+            background: linear-gradient(to right, var(--primary-dark), var(--primary));
+            padding: 60px 0 40px;
+            text-align: center;
+            color: white;
+            margin-top: -80px; /* pull under navbar */
+            padding-top: 140px;
+        }
+        .filter-container {
+            margin-top: -30px;
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="almas-theme">
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading ALMAS...</h3>
+    </div>
+
+    <header class="header glass-header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="images/almas.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="properties-list.html" style="color: var(--primary); font-weight: 700;">Buy</a></li>
+                    <li><a href="properties-list.html">Rent</a></li>
+                </ul>
+                <div class="nav-actions" id="nav-actions-container">
+                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px;"></div>
+                </div>
+            </nav>
+
+            <div class="mobile-controls">
+                <button id="customMenuToggle" class="animated-hamburger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="page-header-bg">
+        <div class="container">
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Find Your Perfect Property</h1>
+            <p style="opacity: 0.9; font-size: 1.1rem;">Browse our complete catalog of premium real estate.</p>
+        </div>
+    </div>
+
+    <div class="container filter-container">
+        <div class="modern-search" style="box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--border);">
+            <div class="modern-search-input-group dropdown-group">
+                <i class="ph ph-map-pin"></i> 
+                <select id="listLocation" class="search-select">
+                    <option value="" disabled selected>Choose Location...</option>
+                    <option value="6th of October">6th of October City</option>
+                    <option value="Hadayek October">Hadayek October</option>
+                    <!-- <option value="Sheikh Zayed">Sheikh Zayed</option> -->
+                    <option value="Hadayek Al Ahram">Hadayek Al Ahram</option>
+                    <!-- <option value="North Coast">North Coast</option>
+                    <option value="New Capital">New Administrative Capital</option> -->
+                </select>
+            </div>
+            <div class="search-divider"></div>
+            
+            <div class="modern-search-input-group dropdown-group">
+                <i class="ph ph-money"></i>
+                <div type="button" id="openPriceModalBtn" class="search-select" style="text-align: left; background: transparent; border: none; width: 100%; cursor: pointer; padding-left: 0;">
+                    <span id="mainPriceDisplay" style="color: var(--text-dark); font-size: 1rem;">Max Price...</span>
+                </div>
+            </div>
+            
+            <button id="listFilterBtn">
+                <i class="ri-filter-3-line"></i> <span class="search-btn-text">Filter</span>
+            </button>
+            <button id="clearFilterBtn" class="btn-outline" style="border: none; margin-left: 5px; background: #f1f5f9; color: var(--text-gray); border-radius: 99px; padding: 12px 20px; font-weight: 600;">
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <main class="container" style="padding-top: 40px; padding-bottom: 80px;">
+        <div class="feed-header">
+            <div>
+                <h2 id="resultsHeading">All Properties</h2>
+                <p id="resultsCount" style="color: var(--text-gray);">Showing all available listings.</p>
+            </div>
+        </div>
+
+        <div class="property-grid" id="properties-feed">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+    </main>
+
+    <footer style="background: white; border-top: 1px solid var(--border); padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/almas.png" alt="Logo" style="width: 35px;">
+                <span style="font-weight: 800; color: var(--primary-dark); font-size: 1.2rem;">ALMAS</span>
+            </div>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">© 2026 ALMAS Real Estate Marketplace.</p>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="priceModal">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="font-weight: 800; font-size: 1.3rem; color: var(--primary-dark);">Set Your Budget</h3>
+                <button id="closePriceModal" style="background: none; border: none; font-size: 1.5rem; color: var(--text-gray); cursor: pointer;"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 25px;">
+                <span style="font-size: 0.9rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Selected Maximum</span>
+                <div id="modalPriceDisplay" style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin-top: 5px;">Any</div>
+            </div>
+
+            <input type="range" id="modalPriceSlider" class="custom-slider" min="60" max="30000000" step="500000" value="30000000">
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-gray); font-weight: 600; margin-top: 10px;">
+                <span>500k EGP</span>
+                <span>30M+ EGP</span>
+            </div>
+
+            <button id="applyPriceBtn" class="btn btn-primary" style="width: 100%; margin-top: 30px; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Apply Filter</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script> 
+    <script type="module" src="almas-load.js"></script> 
+    
+    <script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, getDocs, doc, setDoc, deleteDoc, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const feedContainer = document.getElementById('properties-feed');
+            const locSelect = document.getElementById('listLocation');
+            const filterBtn = document.getElementById('listFilterBtn');
+            const clearBtn = document.getElementById('clearFilterBtn');
+            const resultsHeading = document.getElementById('resultsHeading');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            // =========================================
+            // MODAL & SLIDER UI LOGIC
+            // =========================================
+            const priceModal = document.getElementById('priceModal');
+            const openModalBtn = document.getElementById('openPriceModalBtn');
+            const closeModalBtn = document.getElementById('closePriceModal');
+            const applyPriceBtn = document.getElementById('applyPriceBtn');
+            
+            const priceSlider = document.getElementById('modalPriceSlider');
+            const mainDisplay = document.getElementById('mainPriceDisplay');
+            const modalDisplay = document.getElementById('modalPriceDisplay');
+            const MAX_SLIDER_VAL = "30000000";
+
+            // Open Modal
+            if (openModalBtn) openModalBtn.addEventListener('click', () => priceModal.classList.add('active'));
+            // Close Modal
+            if (closeModalBtn) closeModalBtn.addEventListener('click', () => priceModal.classList.remove('active'));
+            
+            // Close on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === priceModal) priceModal.classList.remove('active');
+            });
+
+            // Update Text Function
+            const updatePriceDisplay = (val) => {
+                if (!priceSlider) return;
+                if (val === MAX_SLIDER_VAL || val === "any" || !val) {
+                    mainDisplay.innerText = "Max Price...";
+                    modalDisplay.innerText = "Any";
+                    priceSlider.value = MAX_SLIDER_VAL;
+                } else {
+                    mainDisplay.innerText = "Up to " + Number(val).toLocaleString() + " EGP";
+                    modalDisplay.innerText = Number(val).toLocaleString() + " EGP";
+                    priceSlider.value = val;
+                }
+            };
+
+            if (priceSlider) {
+                priceSlider.addEventListener('input', (e) => updatePriceDisplay(e.target.value));
+            }
+
+            // APPLY FILTER BUTTON INSIDE MODAL
+            if (applyPriceBtn) {
+                applyPriceBtn.addEventListener('click', () => {
+                    priceModal.classList.remove('active'); // Close modal
+                    loadProperties(locSelect.value, priceSlider.value); // Trigger Firebase Search
+                });
+            }
+
+            // =========================================
+            // DATA & AUTH LOGIC
+            // =========================================
+            let currentUser = null;
+            let savedPropertyIds = new Set();
+            let currentProperties = []; 
+
+            // Parse URL parameters if redirected from home page
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialLoc = urlParams.get('location');
+            const initialPrice = urlParams.get('price');
+
+            if (initialLoc && initialLoc !== "null") locSelect.value = initialLoc;
+            updatePriceDisplay(initialPrice); // Snap slider to URL value
+
+            // 1. Auth & Saved States
+            onAuthStateChanged(auth, async (user) => {
+                currentUser = user;
+                if (user) {
+                    try {
+                        const savedSnap = await getDocs(collection(db, "users", user.uid, "savedProperties"));
+                        savedPropertyIds.clear();
+                        savedSnap.forEach(doc => savedPropertyIds.add(doc.id));
+                    } catch (err) { console.error(err); }
+                } else { savedPropertyIds.clear(); }
+                
+                if (currentProperties.length > 0) renderCards(currentProperties);
+            });
+
+            // 2. Render Cards & Heart Logic
+            const renderCards = (properties) => {
+                currentProperties = properties; 
+                resultsCount.innerText = `Showing ${properties.length} available listing${properties.length === 1 ? '' : 's'}.`;
+
+                if (properties.length === 0) {
+                    feedContainer.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: white; border-radius: 16px; border: 1px solid var(--border);">
+                            <i class="ph ph-magnifying-glass" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                            <h3 style="color: var(--text-dark); margin-bottom: 10px;">No matches found</h3>
+                            <p style="color: var(--text-gray);">Try adjusting your filters to see more results.</p>
+                        </div>`;
+                    return;
+                }
+
+                feedContainer.innerHTML = ''; 
+                properties.forEach((data) => {
+                    const badgeClass = data.type === 'Sale' ? 'sale' : 'rent';
+                    const isSaved = savedPropertyIds.has(data.id);
+                    const heartIcon = isSaved ? 'ri-heart-3-fill' : 'ri-heart-3-line';
+                    const activeStyle = isSaved ? 'color: #ef4444; background: white;' : '';
+
+                    feedContainer.innerHTML += `
+                        <a href="details.html?id=${data.id}" class="p-card">
+                            <div class="p-card-img-box">
+                                <span class="p-badge ${badgeClass}">For ${data.type}</span>
+                                <button class="p-fav-btn feed-save-btn" data-id="${data.id}" style="${activeStyle}" onclick="event.preventDefault();">
+                                    <i class="${heartIcon}"></i>
+                                </button>
+                                <img src="${data.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image'}" alt="${data.title}">
+                                <div class="p-price-glass">${Number(data.price).toLocaleString()} EGP</div>
+                            </div>
+                            <div class="p-card-body">
+                                <h3 class="p-card-title">${data.title}</h3>
+                                <p class="p-card-loc"><i class="ph ph-map-pin"></i> ${data.location}</p>
+                                <div class="p-card-features">
+                                    <div class="p-feat">
+                                        <div class="p-feat-top"><i class="ph ph-bed"></i> ${data.bedrooms || 0}</div>
+                                        <span>Beds</span>
+                                    </div>
+                                    <div class="p-divider"></div>
+                                    <div class="p-feat">
+                                        <div class="p-feat-top"><i class="ph ph-bathtub"></i> ${data.bathrooms || 0}</div>
+                                        <span>Baths</span>
+                                    </div>
+                                    <div class="p-divider"></div>
+                                    <div class="p-feat">
+                                        <div class="p-feat-top"><i class="ph ph-squares-four"></i> ${data.area || 0}m²</div>
+                                        <span>Area</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                attachSaveListeners();
+            };
+
+            const attachSaveListeners = () => {
+                document.querySelectorAll('.feed-save-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        if (!currentUser) {
+                            alert("Please log in to save properties."); return;
+                        }
+                        const propId = btn.getAttribute('data-id');
+                        const propData = currentProperties.find(p => p.id === propId);
+                        const icon = btn.querySelector('i');
+                        const isCurrentlySaved = savedPropertyIds.has(propId);
+                        const savedRef = doc(db, "users", currentUser.uid, "savedProperties", propId);
+                        btn.style.pointerEvents = 'none';
+
+                        try {
+                            if (isCurrentlySaved) {
+                                await deleteDoc(savedRef);
+                                savedPropertyIds.delete(propId);
+                                icon.className = 'ri-heart-3-line';
+                                btn.style.color = ''; btn.style.background = '';
+                            } else {
+                                await setDoc(savedRef, {
+                                    propertyId: propId, title: propData.title, price: propData.price,
+                                    location: propData.location, type: propData.type, bedrooms: propData.bedrooms || 0,
+                                    bathrooms: propData.bathrooms || 0, area: propData.area || 0,
+                                    imageUrl: propData.imageUrl || (propData.images ? propData.images[0] : ""),
+                                    savedAt: serverTimestamp()
+                                });
+                                savedPropertyIds.add(propId);
+                                icon.className = 'ri-heart-3-fill';
+                                btn.style.color = '#ef4444'; btn.style.background = 'white';
+                            }
+                        } catch (err) { console.error(err); } 
+                        finally { btn.style.pointerEvents = 'auto'; }
+                    });
+                });
+            };
+
+            // 3. Fetch Data Logic
+            const loadProperties = async (locFilter = "", priceFilter = "") => {
+                feedContainer.innerHTML = `
+                    <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div><div class="skeleton-card"></div>
+                `;
+
+                try {
+                    let q;
+                    const propertiesRef = collection(db, "properties");
+
+                    if (locFilter) {
+                        q = query(propertiesRef, where("location", "==", locFilter));
+                        resultsHeading.innerText = `Properties in ${locFilter}`;
+                    } else {
+                        q = query(propertiesRef, orderBy("createdAt", "desc"));
+                        resultsHeading.innerText = "All Properties";
+                    }
+
+                    const querySnapshot = await getDocs(q);
+                    let results = [];
+
+                    querySnapshot.forEach((doc) => { results.push({ id: doc.id, ...doc.data() }); });
+
+                    // Advanced Smart Text & Number Cleaner
+                    if (priceFilter && priceFilter !== "any" && priceFilter !== MAX_SLIDER_VAL) {
+                        const maxPrice = Number(priceFilter);
+                        
+                        results = results.filter(prop => {
+                            const rawPriceStr = String(prop.price).toLowerCase();
+                            let cleanPrice = 0;
+
+                            if (rawPriceStr.includes('million') || rawPriceStr.includes('m')) {
+                                // Handles "1.5 million" or "1m"
+                                const numMatch = rawPriceStr.match(/[0-9]*\.?[0-9]+/);
+                                cleanPrice = numMatch ? parseFloat(numMatch[0]) * 1000000 : 0;
+                            } else if (rawPriceStr.includes('thousand') || rawPriceStr.includes('k')) {
+                                // Handles "100 thousand" or "100k"
+                                const numMatch = rawPriceStr.match(/[0-9]*\.?[0-9]+/);
+                                cleanPrice = numMatch ? parseFloat(numMatch[0]) * 1000 : 0;
+                            } else {
+                                // Handles standard "100,000" or random text like "100 sosand"
+                                cleanPrice = parseInt(rawPriceStr.replace(/\D/g, ''), 10) || 0;
+                            }
+                            
+                            return cleanPrice <= maxPrice;
+                        });
+                    }
+
+                    renderCards(results);
+
+                } catch (error) {
+                    console.error("Error fetching properties: ", error);
+                    feedContainer.innerHTML = '<div style="color: #ef4444; grid-column: 1/-1; text-align: center;">Error loading properties.</div>';
+                } finally {
+                    if (window.hideAlmasLoader) window.hideAlmasLoader();
+                }
+            };
+
+            // Initial load
+            loadProperties(locSelect ? locSelect.value : "", priceSlider ? priceSlider.value : "any");
+
+            // Filter Button logic (Next to the search bar)
+            if(filterBtn) {
+                filterBtn.addEventListener('click', () => {
+                    loadProperties(locSelect.value, priceSlider.value);
+                });
+            }
+
+            // Clear Filters logic
+            if(clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    if(locSelect) locSelect.value = "";
+                    updatePriceDisplay(MAX_SLIDER_VAL);
+                    window.history.replaceState({}, document.title, window.location.pathname); // clear URL
+                    loadProperties();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

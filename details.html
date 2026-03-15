@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details | ALMAS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Fullscreen Image Modal Styles */
+        .image-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .image-modal-overlay.active { display: flex; opacity: 1; }
+        #modalMainImage { 
+            max-width: 90%; max-height: 90vh; border-radius: 12px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); object-fit: contain; 
+            transition: opacity 0.2s ease;
+        }
+        .modal-btn {
+            position: absolute; background: rgba(255,255,255,0.1); color: white; 
+            border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: background 0.2s; backdrop-filter: blur(4px);
+        }
+        .modal-btn:hover { background: rgba(255,255,255,0.3); }
+        .modal-close-btn { top: 20px; right: 20px; width: 44px; height: 44px; z-index: 10000;}
+        .modal-nav-btn { top: 50%; transform: translateY(-50%); width: 50px; height: 50px; z-index: 10000;}
+        .modal-nav-btn.left { left: 20px; }
+        .modal-nav-btn.right { right: 20px; }
+        
+        @media (max-width: 768px) {
+            .modal-nav-btn { width: 40px; height: 40px; }
+            .modal-nav-btn.left { left: 10px; }
+            .modal-nav-btn.right { right: 10px; }
+        }
+        
+    </style>
+</head>
+<body style="background-color: #f8fafc;">
+        <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading ALMAS...</h3>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+
+    <header class="header glass-header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="images/almas.png" class="logo-almas" alt="Almas Logo" style="width: 45px;">
+                <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Buy</a></li>
+                    <li><a href="#">Rent</a></li>
+                    <li><a href="#">Commercial</a></li>
+                </ul>
+                <div class="nav-actions" id="nav-actions-container">
+                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px;"></div>
+                </div>
+            </nav>
+<div class="mobile-controls">
+    <button id="menuToggle" class="animated-hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
+            <!-- <div class="mobile-controls">
+                <button id="menuToggle" class="menu-toggle" style="background: none; border: none; font-size: 1.8rem; color: var(--primary-dark); cursor: pointer;">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div> -->
+        </div>
+    </header>
+
+    <main class="container section-padding" style="margin-top: 40px; min-height: 80vh;">
+        
+        <div id="loadingState" style="text-align: center; padding: 100px 0;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 20px;"></i>
+            <h3 style="color: #64748b;">Loading property details...</h3>
+        </div>
+
+        <div id="propertyContent" style="display: none;">
+            
+            <div class="modern-breadcrumb">
+                <a href="index.html">Home</a>
+                <span class="material-icons-round">chevron_right</span>
+                <span id="bcType">Property</span>
+                <span class="material-icons-round">chevron_right</span>
+                <span id="bcTitle" class="active-crumb">Loading...</span>
+            </div>
+
+            <div class="modern-details-layout">
+                <div class="modern-details-main">
+                    
+                    <div class="modern-gallery-container">
+                        <div class="modern-main-image-wrapper">
+                            <img id="detailImage" src="" alt="Property" class="modern-main-image">
+                            <span id="detailBadge" class="modern-badge">For Sale</span>
+                            
+                            <!-- <div class="modern-image-actions">
+                                <button id="fullscreenBtn" title="View Fullscreen"><span class="material-icons-round">fullscreen</span></button>
+                                <button title="Share"><span class="material-icons-round">share</span></button>
+                                <button title="Save"><span class="material-icons-round">favorite_border</span></button>
+                            </div> -->
+                            <div class="modern-image-actions">
+                                <button id="fullscreenBtn" title="View Fullscreen"><span class="material-icons-round">fullscreen</span></button>
+                                <button id="savePropertyBtn" title="Save Property"><span class="material-icons-round" id="saveIcon">favorite_border</span></button>
+                            </div>
+                        </div>
+                        
+                        <div class="modern-thumbnails" id="thumbnailContainer"></div>
+                    </div>
+
+                    <div class="modern-property-header">
+                        <div class="header-left">
+                            <h1 id="detailTitle">Property Title</h1>
+                            <p class="modern-location"><span class="material-icons-round text-primary">location_on</span> <span id="detailLocation">Location</span></p>
+                        </div>
+                        <div class="header-right">
+                            <div id="detailPrice" class="modern-price">0 EGP</div>
+                            <div class="payment-type">Cash Payment Required</div>
+                        </div>
+                    </div>
+
+                    <div class="modern-stats-grid">
+                        <div class="modern-glass-card stat-box">
+                            <span class="material-icons-round text-primary icon-large">bed</span>
+                            <div id="detailBeds" class="stat-value">0</div>
+                            <div class="stat-label">Bedrooms</div>
+                        </div>
+                        <div class="modern-glass-card stat-box">
+                            <span class="material-icons-round text-primary icon-large">bathtub</span>
+                            <div id="detailBaths" class="stat-value">0</div>
+                            <div class="stat-label">Bathrooms</div>
+                        </div>
+                        <div class="modern-glass-card stat-box">
+                            <span class="material-icons-round text-primary icon-large">square_foot</span>
+                            <div class="stat-value"><span id="detailArea">0</span></div>
+                            <div class="stat-label">Sq. Meters</div>
+                        </div>
+                        <div class="modern-glass-card stat-box">
+                            <span class="material-icons-round text-primary icon-large">verified</span>
+                            <div class="stat-value">Ready</div>
+                            <div class="stat-label">Status</div>
+                        </div>
+                    </div>
+
+                    <div class="modern-description">
+                        <h3>Description</h3>
+                        <p id="detailDescription">Discover the epitome of luxury living in this stunning modern property. Featuring floor-to-ceiling windows that flood the space with natural light, this property boasts a seamless indoor-outdoor living experience.</p>
+                        
+                        <ul class="modern-features-list mt-4">
+                            <li><span class="material-icons-round text-primary">check_circle</span> Smart Home System</li>
+                            <li><span class="material-icons-round text-primary">check_circle</span> 24/7 Security</li>
+                            <li><span class="material-icons-round text-primary">check_circle</span> Private Parking</li>
+                            <li><span class="material-icons-round text-primary">check_circle</span> Central AC</li>
+                        </ul>
+                    </div>
+
+                    <div id="mapSection" class="modern-map-container" style="display: none;">
+<div id="propertyMap" style="height: 100%; width: 100%; z-index: 1; border-radius: 1rem;"></div>
+                    </div>
+
+                </div>
+
+                <div class="modern-sidebar">
+                    <div class="modern-sidebar-sticky">
+                        
+                        <div class="modern-glass-card contact-card-modern">
+                            <h3 class="contact-title">Contact Broker</h3>
+                            
+                            <div class="broker-profile">
+                                <div class="broker-avatar">
+                                    <img src="images/Almas logo.png"  alt="Almas">
+                                    <!-- <img src="https://ui-avatars.com/api/?name=+Agent&background=0ea5e9&color=fff" alt="Broker"> -->
+                                    <div class="status-dot"></div>
+                                </div>
+                                <div class="broker-info-text">
+                                    <h4>Almas</h4>
+                                    <!-- <p style="color: #10b981; font-weight: 600; font-size: 0.8rem;"><span class="material-icons-round" style="font-size: 1rem; vertical-align: middle;">verified</span> Almas Trusted</p> -->
+                                </div>
+                            </div>
+
+                            <div class="contact-actions">
+                                <a id="btnPhone" href="#" class="btn-modern-phone">
+                                    <span class="material-icons-round">phone</span> Reveal Phone Number
+                                </a>
+                                <a id="btnWhatsApp" href="#" target="_blank" class="btn-modern-whatsapp">
+                                    <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                                </a>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="chat-form">
+                                <h4>Send a Message</h4>
+                                <textarea id="firstMessageInput" class="modern-input" rows="3" placeholder="Hello, I am interested in this property..."></textarea>
+                                <button id="startChatBtn" class="btn-modern-submit">Send Inquiry</button>
+                            </div>
+                        </div>
+
+                        <div class="modern-safety-tip">
+                            <strong>Safety Tip:</strong> Never transfer money before viewing the property.
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="modern-footer">
+        <div class="container footer-content">
+            <div class="footer-left">
+                <img src="images/almas.png" alt="ALMAS" style="width: 24px; opacity: 0.7;">
+                <span>© 2026 ALMAS Real Estate. All rights reserved.</span>
+            </div>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="imageModal" class="image-modal-overlay">
+        <button id="closeModalBtn" class="modal-btn modal-close-btn"><span class="material-icons-round">close</span></button>
+        <button id="prevImgBtn" class="modal-btn modal-nav-btn left"><span class="material-icons-round">chevron_left</span></button>
+        <img id="modalMainImage" src="" alt="Fullscreen Property Image">
+        <button id="nextImgBtn" class="modal-btn modal-nav-btn right"><span class="material-icons-round">chevron_right</span></button>
+    </div>
+
+    <script src="script.js"></script>
+    <script type="module" src="almas-load.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+import { auth, db } from "./almas.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, getDoc, collection, addDoc, serverTimestamp, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const propertyId = new URLSearchParams(window.location.search).get('id');
+    const loadingState = document.getElementById('loadingState');
+    const propertyContent = document.getElementById('propertyContent');
+
+    if (!propertyId) {
+        loadingState.innerHTML = '<h3 style="color: #ef4444;">Property Not Found!</h3><a href="index.html" class="btn btn-primary" style="margin-top: 20px;">Go Back</a>';
+        if (window.hideAlmasLoader) window.hideAlmasLoader();
+        return;
+    }
+
+    try {
+        const docSnap = await getDoc(doc(db, "properties", propertyId));
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            // =========================================
+            // 1. POPULATE BASIC UI
+            // =========================================
+            document.getElementById('detailTitle').innerText = data.title;
+            document.getElementById('bcTitle').innerText = data.title;
+            document.getElementById('bcType').innerText = `For ${data.type}`;
+            document.getElementById('detailPrice').innerText = `${Number(data.price).toLocaleString()} EGP`;
+            document.getElementById('detailLocation').innerText = data.location;
+            document.getElementById('detailBeds').innerText = data.bedrooms || '0';
+            document.getElementById('detailBaths').innerText = data.bathrooms || '0';
+            document.getElementById('detailArea').innerText = data.area || '0';
+            
+            const badge = document.getElementById('detailBadge');
+            badge.innerText = `For ${data.type}`;
+            badge.style.background = data.type === 'Sale' ? '#0ea5e9' : '#10b981';
+
+            document.getElementById('btnPhone').href = `tel:${data.contactPhone || ''}`;
+            document.getElementById('btnWhatsApp').href = `https://wa.me/${data.contactWhatsApp || ''}`;
+
+            if(data.description) {
+                document.getElementById('detailDescription').innerText = data.description;
+            }
+
+            // =========================================
+            // 2. DYNAMIC GALLERY & MODAL LOGIC
+            // =========================================
+            const mainImgEl = document.getElementById('detailImage');
+            const thumbContainer = document.getElementById('thumbnailContainer');
+
+            const defaultImages = [
+                'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80',
+                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+                'https://images.unsplash.com/photo-1600607687931-cecebd808cbd?w=1200&q=80',
+                'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=80'
+            ];
+
+            let imagesToDisplay = [];
+            let currentImageIndex = 0;
+
+            if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+                imagesToDisplay = data.images;
+            } else if (data.imageUrl) {
+                imagesToDisplay = [data.imageUrl, ...defaultImages.slice(1)];
+            } else {
+                imagesToDisplay = defaultImages;
+            }
+
+            const updateMainImage = (index) => {
+                currentImageIndex = index;
+                mainImgEl.src = imagesToDisplay[index];
+                document.querySelectorAll('.modern-thumb').forEach((t, i) => {
+                    if(i === index) t.classList.add('active');
+                    else t.classList.remove('active');
+                });
+            };
+
+            updateMainImage(0);
+
+            thumbContainer.innerHTML = '';
+            const maxThumbs = Math.min(imagesToDisplay.length, 4); 
+            
+            for (let i = 0; i < maxThumbs; i++) {
+                const isLastThumb = (i === 3 && imagesToDisplay.length > 4);
+                
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = `modern-thumb ${i === 0 ? 'active' : ''} ${isLastThumb ? 'relative-thumb' : ''}`;
+                
+                const img = document.createElement('img');
+                img.src = imagesToDisplay[i];
+                thumbDiv.appendChild(img);
+
+                if (isLastThumb) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'thumb-overlay';
+                    overlay.innerText = `+${imagesToDisplay.length - 4} Photos`;
+                    thumbDiv.appendChild(overlay);
+                }
+
+                thumbDiv.addEventListener('click', () => {
+                    if(isLastThumb) {
+                        openModal(i);
+                    } else {
+                        updateMainImage(i);
+                    }
+                });
+
+                thumbContainer.appendChild(thumbDiv);
+            }
+
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalMainImage');
+            const btnClose = document.getElementById('closeModalBtn');
+            const btnNext = document.getElementById('nextImgBtn');
+            const btnPrev = document.getElementById('prevImgBtn');
+            const btnFullscreen = document.getElementById('fullscreenBtn');
+
+            const openModal = (startIndex) => {
+                currentImageIndex = startIndex;
+                modalImg.src = imagesToDisplay[currentImageIndex];
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                updateMainImage(currentImageIndex < maxThumbs ? currentImageIndex : 0); 
+            };
+
+            const showNextImg = (e) => {
+                e.stopPropagation();
+                currentImageIndex = (currentImageIndex + 1) % imagesToDisplay.length;
+                modalImg.src = imagesToDisplay[currentImageIndex];
+            };
+
+            const showPrevImg = (e) => {
+                e.stopPropagation();
+                currentImageIndex = (currentImageIndex - 1 + imagesToDisplay.length) % imagesToDisplay.length;
+                modalImg.src = imagesToDisplay[currentImageIndex];
+            };
+
+            btnFullscreen.addEventListener('click', () => openModal(currentImageIndex));
+            mainImgEl.addEventListener('click', () => openModal(currentImageIndex)); 
+            btnClose.addEventListener('click', closeModal);
+            btnNext.addEventListener('click', showNextImg);
+            btnPrev.addEventListener('click', showPrevImg);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // =========================================
+            // 3. SAVE / FAVORITE LOGIC
+            // =========================================
+            const saveBtn = document.getElementById('savePropertyBtn');
+            const saveIcon = document.getElementById('saveIcon');
+            let isSaved = false;
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const savedRef = doc(db, "users", user.uid, "savedProperties", propertyId);
+                    const savedSnap = await getDoc(savedRef);
+                    
+                    if (savedSnap.exists()) {
+                        isSaved = true;
+                        saveIcon.innerText = "favorite";
+                        saveIcon.style.color = "#ef4444";
+                    }
+
+                    saveBtn.onclick = async () => {
+                        saveBtn.style.pointerEvents = "none";
+                        
+                        try {
+                            if (isSaved) {
+                                await deleteDoc(savedRef);
+                                isSaved = false;
+                                saveIcon.innerText = "favorite_border";
+                                saveIcon.style.color = "";
+                            } else {
+                                await setDoc(savedRef, {
+                                    propertyId: propertyId,
+                                    title: data.title,
+                                    price: data.price,
+                                    location: data.location,
+                                    type: data.type,
+                                    bedrooms: data.bedrooms || 0,
+                                    bathrooms: data.bathrooms || 0,
+                                    area: data.area || 0,
+                                    imageUrl: imagesToDisplay[0] || "",
+                                    savedAt: serverTimestamp()
+                                });
+                                isSaved = true;
+                                saveIcon.innerText = "favorite";
+                                saveIcon.style.color = "#ef4444";
+                            }
+                        } catch (err) {
+                            console.error("Error saving property:", err);
+                            alert("Failed to update saved properties.");
+                        }
+                        saveBtn.style.pointerEvents = "auto";
+                    };
+                } else {
+                    saveBtn.onclick = () => {
+                        alert("Please log in to save properties.");
+                        window.location.href = "login.html";
+                    };
+                }
+            });
+
+            // =========================================
+            // 4. SHOW CONTENT & HIDE LOADER
+            // =========================================
+            loadingState.style.display = 'none';
+            propertyContent.style.display = 'block';
+            if (window.hideAlmasLoader) window.hideAlmasLoader();
+
+            // =========================================
+            // 5. INIT MAP
+            // =========================================
+            if (data.lat && data.lng) {
+                document.getElementById('mapSection').style.display = 'block';
+                const map = L.map('propertyMap').setView([data.lat, data.lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                L.marker([data.lat, data.lng]).addTo(map).bindPopup(`<b>${data.title}</b>`).openPopup();
+            }
+
+            // =========================================
+            // 6. CHAT LOGIC
+            // =========================================
+            document.getElementById('startChatBtn').onclick = async function() {
+                if (!auth.currentUser) return window.location.href = "login.html";
+                const txt = document.getElementById('firstMessageInput').value.trim();
+                if (!txt) return alert("Please type a message.");
+                
+                this.disabled = true; 
+                this.innerHTML = "Sending...";
+
+                try {
+                    const chatDoc = await addDoc(collection(db, "chats"), { 
+                        propertyId: propertyId, 
+                        propertyTitle: data.title, 
+                        sellerId: data.sellerId, 
+                        buyerId: auth.currentUser.uid, 
+                        lastMessage: txt, 
+                        timestamp: serverTimestamp() 
+                    });
+                    await addDoc(collection(db, "chats", chatDoc.id, "messages"), { 
+                        senderId: auth.currentUser.uid, 
+                        text: txt, 
+                        timestamp: serverTimestamp() 
+                    });
+                    alert("Message sent! Check 'My Messages'."); 
+                    window.location.href = "messages.html";
+                } catch (e) { 
+                    alert("Failed to send."); 
+                    this.disabled = false; 
+                    this.innerHTML = "Send Inquiry"; 
+                }
+            };
+
+        } else { 
+            loadingState.innerHTML = '<h3 style="color: #ef4444;">Property has been removed.</h3>'; 
+            if (window.hideAlmasLoader) window.hideAlmasLoader();
+        }
+    } catch (error) { 
+        console.error(error);
+        loadingState.innerHTML = '<h3 style="color: #ef4444;">Failed to load data.</h3>'; 
+        if (window.hideAlmasLoader) window.hideAlmasLoader();
+    }
+});
+    </script>
+</body>
+</html>

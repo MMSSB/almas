@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Messages | ALMAS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .chat-container { display: flex; height: 70vh; background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .chat-sidebar { width: 300px; border-right: 1px solid var(--border); background: #f8fafc; display: flex; flex-direction: column; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .chat-item:hover { background: white; }
+        .chat-item.active { background: var(--primary-light); border-left: 4px solid var(--primary); }
+        .msg-bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; }
+        .msg-sent { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-received { background: #f1f5f9; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+    </style>
+</head>
+<body style="background: var(--bg-light);">
+
+    <header class="header glass-header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="Almas logo.png" class="logo-almas" alt="Almas Logo" style="width: 45px;">
+                <span style="color: var(--primary-dark); font-weight: 800;">ALMAS</span>
+            </a>
+            <div class="nav-actions" id="nav-actions-container"></div>
+        </div>
+    </header>
+
+    <main class="container section-padding" style="margin-top: 40px;">
+        <h2 style="margin-bottom: 20px; color: var(--primary-dark);">My Messages</h2>
+        
+        <div class="chat-container">
+            <div class="chat-sidebar" id="buyerChatList">
+                <div style="padding: 20px; text-align: center; color: var(--text-gray);">Loading chats...</div>
+            </div>
+
+            <div class="chat-main">
+                <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="text-align: center; margin-top: 100px; color: var(--text-gray);">Select a chat to start messaging</div>
+                </div>
+                
+                <form id="replyForm" style="padding: 20px; border-top: 1px solid var(--border); display: none; gap: 10px; background: white;">
+                    <input type="text" id="replyInput" class="custom-input" placeholder="Type your message..." required style="flex: 1;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0 25px; border-radius: 12px;"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="almas-load.js"></script>
+    <script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, query, where, onSnapshot, addDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let currentChatId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) return window.location.href = "login.html";
+
+            // 1. Listen for User's Chats
+            const chatsRef = collection(db, "chats");
+            const q = query(chatsRef, where("buyerId", "==", user.uid));
+            
+            onSnapshot(q, (snapshot) => {
+                const chatList = document.getElementById('buyerChatList');
+                chatList.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    chatList.innerHTML = '<div style="padding: 20px; text-align: center;">No messages yet.</div>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'chat-item';
+                    div.innerHTML = `
+                        <h4 style="font-size: 0.95rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${data.propertyTitle}</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${data.lastMessage || 'New Chat'}</p>
+                    `;
+                    div.onclick = () => loadChat(doc.id, user.uid);
+                    chatList.appendChild(div);
+                });
+            });
+        });
+
+        // 2. Load Specific Chat Messages
+        function loadChat(chatId, userId) {
+            currentChatId = chatId;
+            document.getElementById('replyForm').style.display = 'flex';
+            const msgBox = document.getElementById('chatMessages');
+            msgBox.innerHTML = 'Loading...';
+
+            const msgsRef = collection(db, "chats", chatId, "messages");
+            const q = query(msgsRef, orderBy("timestamp", "asc"));
+
+            onSnapshot(q, (snapshot) => {
+                msgBox.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    const isMe = msg.senderId === userId;
+                    msgBox.innerHTML += `
+                        <div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}">
+                            ${msg.text}
+                        </div>
+                    `;
+                });
+                msgBox.scrollTop = msgBox.scrollHeight; // Auto scroll to bottom
+            });
+        }
+
+        // 3. Send Message
+        document.getElementById('replyForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('replyInput');
+            const text = input.value.trim();
+            if (!text || !currentChatId) return;
+
+            input.value = '';
+            await addDoc(collection(db, "chats", currentChatId, "messages"), {
+                senderId: auth.currentUser.uid,
+                text: text,
+                timestamp: serverTimestamp()
+            });
+        };
+    </script>
+</body>
+</html>

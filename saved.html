@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Properties | ALMAS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="almas-theme">
+
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading ALMAS...</h3>
+    </div>
+
+    <header class="header glass-header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="images/almas.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <span style="color: var(--primary-dark); font-weight: 800; letter-spacing: 1px;">ALMAS</span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Buy</a></li>
+                    <li><a href="#">Rent</a></li>
+                </ul>
+                <div class="nav-actions" id="nav-actions-container">
+                    <div style="width: 150px; height: 30px; background: #e2e8f0; border-radius: 20px; animation: pulse 1.5s infinite;"></div>
+                </div>
+            </nav>
+
+            <div class="mobile-controls">
+                <button id="customMenuToggle" class="animated-hamburger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container profile-container">
+        <div class="profile-layout">
+            
+            <aside class="profile-sidebar">
+                <div class="user-mini-card">
+                    <div class="user-avatar-large">
+                        <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=0ea5e9&color=fff" alt="User Avatar">
+                    </div>
+                    <h3 id="sidebarName" style="font-weight: 700; color: var(--text-dark); margin-bottom: 5px;">Loading...</h3>
+                    <div id="sidebarRole" style="display: inline-block; padding: 4px 12px; background: var(--primary-light); color: var(--primary-dark); border-radius: 99px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">User</div>
+                </div>
+                <nav class="profile-nav">
+                    <a href="profile.html" class="profile-link"><i class="ph ph-user"></i> My Profile</a>
+                    <a href="saved.html" class="profile-link active"><i class="ph ph-heart"></i> Saved Properties</a>
+                    <a href="account-settings.html" class="profile-link"><i class="ph ph-gear"></i> Account Settings</a>
+                </nav>
+            </aside>
+
+            <div class="dash-main">
+                <div style="margin-bottom: 25px;">
+                    <h2 style="font-weight: 800; color: var(--primary-dark); font-size: 1.8rem;">Saved Properties</h2>
+                    <p style="color: var(--text-gray);">Properties you have favorited will appear here.</p>
+                </div>
+
+                <div class="property-grid" id="saved-feed">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer style="background: white; border-top: 1px solid var(--border); padding: 40px 0;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/almas.png" alt="Logo" style="width: 35px;">
+                <span style="font-weight: 800; color: var(--primary-dark); font-size: 1.2rem;">ALMAS</span>
+            </div>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">© 2026 ALMAS Real Estate Marketplace.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script type="module" src="almas-load.js"></script>
+
+<script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, getDocs, doc, getDoc, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const feedContainer = document.getElementById('saved-feed');
+            let currentUserUid = null;
+
+            // Function to show empty state if no properties are left
+            const checkEmptyState = () => {
+                if (feedContainer.children.length === 0) {
+                    feedContainer.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: white; border-radius: 16px; border: 1px solid var(--border);">
+                            <i class="ph ph-heart-break" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                            <h3 style="color: var(--text-dark); margin-bottom: 10px;">No saved properties yet</h3>
+                            <p style="color: var(--text-gray); margin-bottom: 20px;">Start exploring and tap the heart icon to save properties you love.</p>
+                            <a href="index.html" class="btn btn-primary">Browse Properties</a>
+                        </div>`;
+                }
+            };
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserUid = user.uid;
+                    try {
+                        // 1. Populate Sidebar
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const fullName = userDoc.data().fullName || "User";
+                            document.getElementById('sidebarName').innerText = fullName;
+                            document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=0ea5e9&color=fff`;
+                        }
+
+                        // 2. Fetch Saved Properties
+                        const q = query(collection(db, "users", user.uid, "savedProperties"), orderBy("savedAt", "desc"));
+                        const querySnapshot = await getDocs(q);
+                        
+                        feedContainer.innerHTML = ''; // Clear skeletons
+
+                        if (querySnapshot.empty) {
+                            checkEmptyState();
+                            if (window.hideAlmasLoader) window.hideAlmasLoader();
+                            return;
+                        }
+
+                        // 3. Render Cards
+                        querySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            const badgeClass = data.type === 'Sale' ? 'sale' : 'rent';
+                            
+                            // Notice we added an ID to the card and the "remove-saved-btn" class to the button
+                            const cardHtml = `
+                                <a href="details.html?id=${data.propertyId}" class="p-card" id="saved-card-${data.propertyId}">
+                                    <div class="p-card-img-box">
+                                        <span class="p-badge ${badgeClass}">For ${data.type}</span>
+                                        <button class="p-fav-btn remove-saved-btn" data-id="${data.propertyId}" style="color: #ef4444; background: white;">
+                                            <i class="ri-heart-3-fill"></i>
+                                        </button>
+                                        <img src="${data.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image'}" alt="${data.title}">
+                                        <div class="p-price-glass">${Number(data.price).toLocaleString()} EGP</div>
+                                    </div>
+                                    <div class="p-card-body">
+                                        <h3 class="p-card-title">${data.title}</h3>
+                                        <p class="p-card-loc"><i class="ph ph-map-pin"></i> ${data.location}</p>
+                                        
+                                        <div class="p-card-features">
+                                            <div class="p-feat">
+                                                <div class="p-feat-top"><i class="ph ph-bed"></i> ${data.bedrooms || 0}</div>
+                                                <span>Beds</span>
+                                            </div>
+                                            <div class="p-divider"></div>
+                                            <div class="p-feat">
+                                                <div class="p-feat-top"><i class="ph ph-bathtub"></i> ${data.bathrooms || 0}</div>
+                                                <span>Baths</span>
+                                            </div>
+                                            <div class="p-divider"></div>
+                                            <div class="p-feat">
+                                                <div class="p-feat-top"><i class="ph ph-squares-four"></i> ${data.area || 0}m²</div>
+                                                <span>Area</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            `;
+                            feedContainer.insertAdjacentHTML('beforeend', cardHtml);
+                        });
+
+                        // 4. Attach Remove Logic to the Hearts
+                        document.querySelectorAll('.remove-saved-btn').forEach(btn => {
+                            btn.addEventListener('click', async (e) => {
+                                e.preventDefault(); // Stop the card from navigating to details.html
+                                e.stopPropagation();
+
+                                const propId = btn.getAttribute('data-id');
+                                const cardElement = document.getElementById(`saved-card-${propId}`);
+                                
+                                // Show loading state on the button
+                                btn.style.pointerEvents = 'none';
+                                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                                try {
+                                    // Delete from Firebase
+                                    await deleteDoc(doc(db, "users", currentUserUid, "savedProperties", propId));
+                                    
+                                    // Smoothly fade out and remove the card from the screen
+                                    cardElement.style.opacity = '0';
+                                    cardElement.style.transform = 'scale(0.9)';
+                                    setTimeout(() => {
+                                        cardElement.remove();
+                                        checkEmptyState(); // If it was the last card, show the empty message
+                                    }, 300);
+
+                                } catch (err) {
+                                    console.error("Error removing saved property:", err);
+                                    alert("Could not remove property from saved list.");
+                                    btn.style.pointerEvents = 'auto';
+                                    btn.innerHTML = '<i class="ri-heart-3-fill"></i>';
+                                }
+                            });
+                        });
+
+                    } catch (error) {
+                        console.error("Error fetching saved properties:", error);
+                        feedContainer.innerHTML = '<div style="color: #ef4444; grid-column: 1/-1;">Error loading saved properties.</div>';
+                    } finally {
+                        if (window.hideAlmasLoader) window.hideAlmasLoader();
+                    }
+                } else {
+                    window.location.href = "login.html";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

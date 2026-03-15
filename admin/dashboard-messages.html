@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Inbox | ALMAS Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    
+    <style>
+        /* WhatsApp Style Chat UI */
+        .chat-layout { 
+            display: flex; height: calc(100vh - 120px); border-radius: 16px; 
+            border: 1px solid var(--border); overflow: hidden; background: white; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: 15px;
+        }
+        
+        /* Left Sidebar (Chat List) */
+        .chat-sidebar-list { width: 350px; border-right: 1px solid var(--border); background: #ffffff; display: flex; flex-direction: column; }
+        .chat-list-header { padding: 20px; border-bottom: 1px solid var(--border); background: #f8fafc; }
+        .chat-list-item { display: flex; gap: 15px; padding: 15px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; align-items: center; }
+        .chat-list-item:hover { background: #f1f5f9; }
+        .chat-list-item.active { background: var(--primary-light); border-left: 4px solid var(--primary); }
+        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .chat-item-info { flex: 1; overflow: hidden; }
+        .chat-item-name { font-weight: 700; color: var(--text-dark); font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .chat-item-time { font-size: 0.75rem; color: var(--text-gray); font-weight: 500; }
+        .chat-item-prop { font-size: 0.8rem; color: var(--primary); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .chat-item-msg { font-size: 0.85rem; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+        
+        /* Right Main Area (Messages) */
+        .chat-main-area { flex: 1; display: flex; flex-direction: column; background: #efeae2; position: relative; }
+        .chat-main-header { padding: 15px 20px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .chat-messages-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #e2ebef; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        
+        /* Message Bubbles */
+        .msg-wrapper { display: flex; gap: 10px; align-items: flex-end; max-width: 75%; }
+        .msg-wrapper.received { align-self: flex-start; }
+        .msg-wrapper.sent { align-self: flex-end; flex-direction: row-reverse; }
+        
+        .msg-avatar-small { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .msg-bubble { padding: 10px 15px; border-radius: 12px; font-size: 0.95rem; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-wrapper.received .msg-bubble { background: white; border-bottom-left-radius: 4px; color: var(--text-dark); }
+        .msg-wrapper.sent .msg-bubble { background: #c6eaf8; border-bottom-right-radius: 4px; color: var(--text-dark); } 
+        
+        .msg-time { font-size: 0.7rem; color: rgba(0,0,0,0.5); display: block; text-align: right; margin-top: 4px; margin-bottom: -2px; }
+        
+        /* Input Area */
+        .chat-input-area { padding: 15px 20px; background: #f0f2f5; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+        .chat-input-area input { flex: 1; padding: 15px 20px; border-radius: 99px; border: none; background: white; outline: none; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .chat-input-area button { background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; transition: 0.2s; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+        .chat-input-area button:hover { transform: scale(1.05); background: var(--primary-dark); }
+    </style>
+</head>
+<body>
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading messages...</h3>
+    </div>
+    <aside class="sidebar">
+        <div class="logo-area"><div><img src="images/almas.png" alt="Logo"> ALMAS</div></div>
+        <div class="admin-profile">
+            <i class="fa-solid fa-shield-halved" id="roleIcon"></i>
+            <h4 id="dashUserName">Loading...</h4>
+            <p id="dashUserRole">Company Portal</p>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-btn"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+            <a href="dashboard-properties.html" class="nav-btn"><i class="fa-solid fa-building"></i> Catalog & Ads</a>
+            <a href="dashboard-messages.html" class="nav-btn active"><i class="fa-solid fa-envelope"></i> Customer Inbox</a>
+            <a href="dashboard-users.html" class="nav-btn"><i class="fa-solid fa-users"></i> Manage Users</a>
+            <a href="dashboard-team.html" class="nav-btn" id="navTeamBtn" style="display: none;"><i class="fa-solid fa-user-shield"></i> Manage Team</a>
+        </div>
+        <button class="logout-btn" id="dashLogoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</button>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header" style="padding: 15px 30px;">
+            <h2 class="page-title">Customer Inbox</h2>
+        </header>
+
+        <div class="content-body" style="padding-top: 0; max-width: 1400px;">
+            <div class="chat-layout">
+                
+                <div class="chat-sidebar-list">
+                    <div class="chat-list-header">
+                        <h3 style="color: var(--primary-dark); font-size: 1.2rem;">All Conversations</h3>
+                    </div>
+                    <div id="adminChatList" style="flex: 1; overflow-y: auto;">
+                        <p style="text-align: center; color: var(--text-gray); margin-top: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading chats...</p>
+                    </div>
+                </div>
+                
+                <div class="chat-main-area">
+                    <div id="activeChatHeader" class="chat-main-header" style="display: none;">
+                        <img src="" id="headerAvatar" class="chat-avatar" style="width: 45px; height: 45px;">
+                        <div>
+                            <h3 id="headerCustomerName" style="font-size: 1.1rem; color: var(--text-dark); margin-bottom: 2px;">Customer</h3>
+                            <p id="headerPropertyTitle" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;"><i class="fa-solid fa-building"></i> Property Name</p>
+                        </div>
+                    </div>
+
+                    <div id="chatMessagesBox" class="chat-messages-box">
+                        <div style="text-align: center; margin-top: auto; margin-bottom: auto; color: var(--text-gray);">
+                            <img src="images/almas.png" style="font-size: 5rem; color: #cbd5e1; margin-bottom: 15px; width: 80px;">
+                            <!-- <i class="fa-brands fa-whatsapp" style="font-size: 5rem; color: #cbd5e1; margin-bottom: 15px;"></i> -->
+                            <h3 style="font-weight: 600;">Select a chat to start messaging</h3>
+                        </div>
+                    </div>
+
+                    <form id="adminReplyForm" class="chat-input-area" style="display: none;">
+                        <input type="text" id="adminReplyInput" placeholder="Type a message..." required autocomplete="off">
+                        <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { auth, db } from "./almas.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, collection, query, addDoc, updateDoc, serverTimestamp, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let currentUserRole = null;
+            let companyAvatarUrl = "https://ui-avatars.com/api/?name=Almas+Agent&background=0369a1&color=fff"; // Company Avatar
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) return window.location.href = "almas-login.html";
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                currentUserRole = userDoc.data().role;
+                if (currentUserRole !== 'admin' && currentUserRole !== 'employee') return window.location.href = "index.html";
+
+                document.getElementById('dashUserName').innerText = userDoc.data().fullName;
+                if (currentUserRole === 'admin') {
+                    document.getElementById('dashUserRole').innerText = "Administrator";
+                    document.getElementById('navTeamBtn').style.display = 'flex';
+                } else {
+                    document.getElementById('dashUserRole').innerText = "Employee Portal";
+                    document.getElementById('roleIcon').className = "fa-solid fa-user-tie";
+                }
+
+                loadAdminInbox();
+            });
+
+            document.getElementById('dashLogoutBtn').onclick = () => signOut(auth).then(()=>window.location.href="almas-login.html");
+
+            // Cache for user names to avoid too many database reads
+            const userCache = {};
+            async function getCustomerDetails(uid) {
+                if(userCache[uid]) return userCache[uid];
+                try {
+                    const d = await getDoc(doc(db, "users", uid));
+                    userCache[uid] = d.exists() ? d.data().fullName : "Guest Customer";
+                } catch(e) { userCache[uid] = "Customer"; }
+                return userCache[uid];
+            }
+
+            function formatTime(ts) {
+                if(!ts) return '';
+                const date = ts.toDate();
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            let currentChatId = null;
+            let activeCustomerAvatar = "";
+
+            function loadAdminInbox() {
+                onSnapshot(query(collection(db, "chats"), orderBy("timestamp", "desc")), async (snap) => {
+                    const list = document.getElementById('adminChatList'); 
+                    list.innerHTML = snap.empty ? '<p style="padding:20px; text-align:center; color: var(--text-gray);">No messages yet.</p>' : '';
+                    
+                    for (const docSnap of snap.docs) {
+                        const d = docSnap.data();
+                        const customerName = await getCustomerDetails(d.buyerId);
+                        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(customerName)}&background=f1f5f9&color=0f172a`;
+                        const timeStr = formatTime(d.timestamp);
+
+                        const div = document.createElement('div'); 
+                        div.className = `chat-list-item ${currentChatId === docSnap.id ? 'active' : ''}`;
+                        div.innerHTML = `
+                            <img src="${avatarUrl}" class="chat-avatar">
+                            <div class="chat-item-info">
+                                <div class="chat-item-name">
+                                    <span>${customerName}</span>
+                                    <span class="chat-item-time">${timeStr}</span>
+                                </div>
+                                <p class="chat-item-prop"><i class="fa-solid fa-house-chimney"></i> ${d.propertyTitle}</p>
+                                <p class="chat-item-msg">${d.lastMessage}</p>
+                            </div>
+                        `;
+                        div.onclick = () => { 
+                            document.querySelectorAll('.chat-list-item').forEach(i=>i.classList.remove('active')); 
+                            div.classList.add('active'); 
+                            
+                            // Setup Header
+                            document.getElementById('activeChatHeader').style.display = 'flex';
+                            document.getElementById('headerAvatar').src = avatarUrl;
+                            document.getElementById('headerCustomerName').innerText = customerName;
+                            document.getElementById('headerPropertyTitle').innerHTML = `<i class="fa-solid fa-house-chimney"></i> ${d.propertyTitle}`;
+                            activeCustomerAvatar = avatarUrl;
+
+                            loadChatMessages(docSnap.id); 
+                        };
+                        list.appendChild(div);
+                    }
+                });
+            }
+
+            function loadChatMessages(chatId) {
+                currentChatId = chatId; 
+                document.getElementById('adminReplyForm').style.display = 'flex';
+                const box = document.getElementById('chatMessagesBox'); 
+                box.innerHTML = '<div style="text-align:center; margin-top:auto; margin-bottom:auto;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+                
+                onSnapshot(query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc")), (snap) => {
+                    box.innerHTML = ''; 
+                    snap.forEach(docSnap => { 
+                        const m = docSnap.data();
+                        const isCompany = (m.senderRole === 'admin' || m.senderRole === 'employee' || m.senderId === auth.currentUser.uid); 
+                        const timeStr = formatTime(m.timestamp);
+
+                        if(isCompany) {
+                            // Sent by Company
+                            box.innerHTML += `
+                                <div class="msg-wrapper sent">
+                                    <img src="${companyAvatarUrl}" class="msg-avatar-small">
+                                    <div class="msg-bubble">
+                                        ${m.text}
+                                        <span class="msg-time">${timeStr}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // Received from Customer
+                            box.innerHTML += `
+                                <div class="msg-wrapper received">
+                                    <img src="${activeCustomerAvatar}" class="msg-avatar-small">
+                                    <div class="msg-bubble">
+                                        ${m.text}
+                                        <span class="msg-time">${timeStr}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }); 
+                    box.scrollTop = box.scrollHeight;
+                });
+            }
+
+            document.getElementById('adminReplyForm').onsubmit = async (e) => {
+                e.preventDefault(); const inp = document.getElementById('adminReplyInput'), txt = inp.value.trim(); if(!txt || !currentChatId) return; 
+                inp.value = '';
+                await addDoc(collection(db, "chats", currentChatId, "messages"), { senderId: auth.currentUser.uid, senderRole: currentUserRole, text: txt, timestamp: serverTimestamp() });
+                await updateDoc(doc(db, "chats", currentChatId), { lastMessage: "Company: " + txt, timestamp: serverTimestamp() });
+            };
+        });
+    </script>
+</body>
+</html>

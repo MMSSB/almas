@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Almas Developments</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container navbar">
+            <a href="index.html" class="logo">
+                <img src="images/almas.png" class="logo-almas" alt="Almas Logo" style="width: 40px;">
+                <span style="color: var(--primary-dark);">ALMAS</span>
+            </a>
+            <div class="nav-actions">
+                <span style="font-size:0.9rem; margin-right:15px;">New user?</span>
+                <a href="signup.html" class="btn btn-outline">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="auth-page-wrapper">
+        <div class="auth-image-card" style="background-image: linear-gradient(to bottom, rgba(3, 105, 161, 0.4), rgba(15, 23, 42, 0.8)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');">
+            <div>
+                <div class="trust-badge">
+                    <i class="fa-solid fa-house-circle-check"></i> #1 Real Estate Platform
+                </div>
+                <div class="auth-hero-text" style="margin-top: 30px;">
+                    <h1>Welcome back to your property dashboard.</h1>
+                    <p>Save your favorite listings, contact brokers, and find your dream home.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-form-side" style="display:flex; flex-direction:column; justify-content:center;">
+            <div class="auth-header">
+                <h2>Log in to your account</h2>
+                <p>Welcome back! Please enter your details.</p>
+            </div>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <label class="input-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="login-email" class="custom-input" placeholder="name@example.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-password" class="custom-input" placeholder="Enter password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" style="margin-top: 20px;">
+                    Log In <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+                <div class="secure-footer" style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+                    Don't have an account? <a href="signup.html" style="color: var(--primary); font-weight: 600;">Create One</a><br>
+                    <!-- Are you a broker? <a href="login-seller.html" style="color: var(--primary-dark); font-weight: 600;">Broker Login</a> -->
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties Catalog | ALMAS Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="dashboard.css">
+
+    <style>
+        .prop-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: white; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .prop-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(14, 165, 233, 0.1); border-color: var(--primary-light); }
+        .prop-card img { width: 100%; height: 220px; object-fit: cover; }
+        .prop-card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+        .prop-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .badge-sale { background: #e0f2fe; color: var(--primary-dark); }
+        .badge-rent { background: #dcfce7; color: #059669; }
+        .prop-title { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .prop-price { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .prop-card-actions { margin-top: auto; display: flex; gap: 10px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .btn-small { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .additional-images-info { font-size: 0.85rem; color: var(--text-gray); margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div id="almas-loader" class="almas-loader-overlay">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <img src="images/almas.png" alt="ALMAS Logo" class="loader-logo">
+        </div>
+        <h3 class="loader-text">Loading Posts...</h3>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <aside class="sidebar">
+        <div class="logo-area"><div><img src="images/almas.png" alt="Logo"> ALMAS</div></div>
+        <div class="admin-profile">
+            <i class="fa-solid fa-shield-halved" id="roleIcon"></i>
+            <h4 id="dashUserName">Loading...</h4>
+            <p id="dashUserRole">Company Portal</p>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-btn"><i class="fa-solid fa-chart-pie"></i> Overview</a>
+            <a href="dashboard-properties.html" class="nav-btn active"><i class="fa-solid fa-building"></i> Catalog & Ads</a>
+            <a href="dashboard-messages.html" class="nav-btn"><i class="fa-solid fa-envelope"></i> Customer Inbox</a>
+            <a href="dashboard-users.html" class="nav-btn"><i class="fa-solid fa-users"></i> Manage Users</a>
+            <a href="dashboard-team.html" class="nav-btn" id="navTeamBtn" style="display: none;"><i class="fa-solid fa-user-shield"></i> Manage Team</a>
+        </div>
+        <button class="logout-btn" id="dashLogoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</button>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2 class="page-title">Company Catalog</h2>
+            <button id="toggleFormBtn" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add New Listing</button>
+        </header>
+
+        <div class="content-body">
+
+            <div class="glass-card" id="propertyFormCard" style="display: none;">
+                <div class="edit-mode-banner" id="editModeBanner">
+                    <span><i class="fa-solid fa-pen-nib"></i> You are editing an existing company listing.</span>
+                    <button id="cancelEditBtn">Cancel Edit</button>
+                </div>
+
+                <h3 id="formTitle" style="margin-bottom: 25px; color: var(--primary-dark);">Create a New Listing</h3>
+                
+                <form id="postAdForm">
+                    <!-- Main Image (Optional) -->
+                    <div class="form-full input-group">
+                        <label>Main Image (Optional)</label>
+                        <div class="upload-area" id="uploadBox">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 15px;"></i>
+                            <p style="font-weight: 600;">Click to upload a photo</p>
+                            <input type="file" id="propImage" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="imagePreviewContainer" style="display: none; position: relative;">
+                            <img id="imagePreview" src="" alt="Preview" style="width: 100%; height: 350px; object-fit: cover; border-radius: 16px;">
+                            <button type="button" id="removeImageBtn" style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; padding: 10px 15px; font-weight: 600; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-trash"></i> Remove Image</button>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <label>Or enter image URL:</label>
+                            <input type="url" id="propImageUrl" class="custom-input" placeholder="https://example.com/image.jpg">
+                        </div>
+                    </div>
+
+                    <!-- Additional Images (Multiple) -->
+                    <div class="form-full input-group">
+                        <label>Additional Images (Optional, multiple)</label>
+                        <input type="file" id="propAdditionalImages" class="custom-input" multiple accept="image/*">
+                        <small class="additional-images-info">You can select multiple images. They will be shown in the property gallery (coming soon).</small>
+                    </div>
+
+                    <div class="form-full input-group">
+                        <label>Listing Title</label>
+                        <input type="text" id="propTitle" class="custom-input" placeholder="e.g. Modern Twinhouse in New Cairo" required>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group"><label>Transaction Type</label><select id="propType" class="custom-input" required><option value="Sale">For Sale</option><option value="Rent">For Rent</option></select></div>
+                        <div class="input-group"><label>Price (EGP)</label><input type="number" id="propPrice" class="custom-input" placeholder="5000000" required></div>
+                        <div class="input-group"><label>City / Location</label><select id="propLocation" class="custom-input" required>
+                            <option value="6th of October">6th of October</option>
+                            <option value="Sheikh Zayed">Sheikh Zayed</option>
+                            <option value="New Cairo">New Cairo</option>
+                            <option value="North Coast">North Coast</option>
+                            <option value="New Capital">New Capital</option>
+                        </select></div>
+                        <div class="input-group"><label>Total Area (m²)</label><input type="number" id="propArea" class="custom-input" placeholder="200" required></div>
+                        <div class="input-group"><label>Bedrooms</label><input type="number" id="propBeds" class="custom-input" placeholder="3" required></div>
+                        <div class="input-group"><label>Bathrooms</label><input type="number" id="propBaths" class="custom-input" placeholder="2" required></div>
+                        <div class="input-group"><label>Agent Phone (Optional Override)</label><input type="tel" id="propPhone" class="custom-input" placeholder="Leave blank for default"></div>
+                        <div class="input-group"><label>Agent WhatsApp (Optional)</label><input type="tel" id="propWhatsApp" class="custom-input" placeholder="Leave blank for default"></div>
+                    </div>
+
+                    <div class="form-full input-group" style="margin-top: 20px;">
+                        <label><i class="fa-solid fa-map-pin" style="color: var(--primary);"></i> Pin on Map</label>
+                        <div id="formMap" style="height: 300px; border-radius: 12px; border: 1px solid var(--border); z-index: 1;"></div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; padding: 16px; margin-top: 20px; font-size: 1.1rem;">
+                        Publish Listing <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div>
+                <h3 style="margin-bottom: 15px; color: var(--text-dark);">Active Catalog</h3>
+                <div class="prop-grid" id="myPropertiesGrid">Loading properties...</div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module">
+        import { auth, db, storage } from "./almas.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { doc, getDoc, collection, query, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            function showToast(m, t='success'){ const tst=document.createElement('div'); tst.className='toast'; tst.innerHTML=`<i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> <span>${m}</span>`; document.getElementById('toastContainer').appendChild(tst); setTimeout(()=>tst.remove(), 3000); }
+
+            // AUTH CHECK
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) return window.location.href = "almas-login.html";
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                const role = userDoc.data().role;
+                if (role !== 'admin' && role !== 'employee') return window.location.href = "index.html";
+
+                document.getElementById('dashUserName').innerText = userDoc.data().fullName;
+                if (role === 'admin') {
+                    document.getElementById('dashUserRole').innerText = "Administrator";
+                    document.getElementById('navTeamBtn').style.display = 'flex';
+                } else {
+                    document.getElementById('dashUserRole').innerText = "Employee Portal";
+                    document.getElementById('roleIcon').className = "fa-solid fa-user-tie";
+                }
+
+                fetchAllProperties();
+            });
+
+            document.getElementById('dashLogoutBtn').onclick = () => signOut(auth).then(()=>window.location.href="almas-login.html");
+
+            // UI TOGGLES & MAP
+            const formCard = document.getElementById('propertyFormCard');
+            const toggleBtn = document.getElementById('toggleFormBtn');
+            let map, marker, selectedLat = null, selectedLng = null;
+
+            function initMap() {
+                if(!map) {
+                    map = L.map('formMap').setView([30.0444, 31.2357], 10);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    map.on('click', (e) => { if (marker) map.removeLayer(marker); marker = L.marker(e.latlng).addTo(map); selectedLat = e.latlng.lat; selectedLng = e.latlng.lng; });
+                } else { setTimeout(() => map.invalidateSize(), 300); }
+            }
+
+            toggleBtn.onclick = () => {
+                formCard.style.display = formCard.style.display === 'none' ? 'block' : 'none';
+                if(formCard.style.display === 'block') {
+                    initMap();
+                    formCard.scrollIntoView({behavior: "smooth", block: "start"});
+                }
+            };
+
+            let editingPropertyId = null, existingImageUrl = null, existingAdditionalImages = [];
+
+            // FETCH PROPERTIES
+            async function fetchAllProperties() {
+                const grid = document.getElementById('myPropertiesGrid');
+                const q = query(collection(db, "properties"), orderBy("createdAt", "desc"));
+                const snap = await getDocs(q);
+                
+                grid.innerHTML = snap.empty ? '<p style="grid-column: 1/-1; text-align: center; color: var(--text-gray);">No properties in catalog yet.</p>' : '';
+                
+                snap.forEach(docSnap => {
+                    const data = docSnap.data(), id = docSnap.id, img = data.imageUrl || 'images/back.jpg';
+                    const badgeClass = data.type === 'Sale' ? 'badge-sale' : 'badge-rent';
+
+                    grid.innerHTML += `
+                        <div class="prop-card" id="card-${id}">
+                            <img src="${img}">
+                            <div class="prop-card-body">
+                                <div>
+                                    <span class="prop-badge ${badgeClass}">For ${data.type}</span>
+                                    <span style="float: right; font-size:0.85rem; color: var(--text-gray); font-weight: 600;"><i class="fa-solid fa-location-dot"></i> ${data.location}</span>
+                                </div>
+                                <h4 class="prop-title">${data.title}</h4>
+                                <div class="prop-price">${data.price.toLocaleString()} EGP</div>
+                                <div class="prop-card-actions">
+                                    <button class="btn btn-outline btn-small btn-edit" data-id="${id}" data-json='${JSON.stringify(data).replace(/'/g, "&apos;")}'><i class="fa-solid fa-pen"></i> Edit</button>
+                                    <button class="btn btn-danger btn-small btn-delete" data-id="${id}"><i class="fa-solid fa-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                document.querySelectorAll('.btn-edit').forEach(b => b.onclick = function() {
+                    const data = JSON.parse(this.getAttribute('data-json')); 
+                    editingPropertyId = this.getAttribute('data-id'); 
+                    existingImageUrl = data.imageUrl;
+                    existingAdditionalImages = data.additionalImages || [];
+
+                    // Fill main fields
+                    document.getElementById('propTitle').value = data.title;
+                    document.getElementById('propType').value = data.type;
+                    document.getElementById('propPrice').value = data.price;
+                    document.getElementById('propLocation').value = data.location;
+                    document.getElementById('propArea').value = data.area;
+                    document.getElementById('propBeds').value = data.bedrooms;
+                    document.getElementById('propBaths').value = data.bathrooms;
+                    document.getElementById('propPhone').value = data.contactPhone || '';
+                    document.getElementById('propWhatsApp').value = data.contactWhatsApp || '';
+
+                    // Handle main image preview
+                    if (existingImageUrl) {
+                        document.getElementById('imagePreview').src = existingImageUrl;
+                        document.getElementById('uploadBox').style.display = 'none';
+                        document.getElementById('imagePreviewContainer').style.display = 'block';
+                    } else {
+                        document.getElementById('removeImageBtn').click(); // reset
+                    }
+
+                    // Show additional images count
+                    const additionalInfo = document.querySelector('.additional-images-info');
+                    if (existingAdditionalImages.length) {
+                        additionalInfo.innerHTML = `${existingAdditionalImages.length} additional image(s) saved. Upload new ones to replace.`;
+                    } else {
+                        additionalInfo.innerHTML = 'No additional images saved.';
+                    }
+
+                    document.getElementById('formTitle').innerText = "Edit Company Listing"; 
+                    document.getElementById('submitBtn').innerHTML = 'Update Listing <i class="fa-solid fa-check" style="margin-left: 8px;"></i>'; 
+                    document.getElementById('editModeBanner').style.display = 'flex';
+                    
+                    formCard.style.display = 'block';
+                    initMap();
+                    if(data.lat && data.lng) { 
+                        selectedLat = data.lat; 
+                        selectedLng = data.lng; 
+                        if(marker) map.removeLayer(marker); 
+                        marker = L.marker([data.lat, data.lng]).addTo(map); 
+                        map.setView([data.lat, data.lng], 15); 
+                    }
+                    formCard.scrollIntoView({behavior: "smooth", block: "start"});
+                });
+
+                document.querySelectorAll('.btn-delete').forEach(b => b.onclick = async function() { 
+                    if(confirm("Are you sure you want to permanently delete this listing?")) { 
+                        await deleteDoc(doc(db, "properties", this.getAttribute('data-id'))); 
+                        showToast("Listing deleted."); 
+                        fetchAllProperties(); 
+                    }
+                });
+            }
+
+            // FORM LOGIC
+            const fileInput = document.getElementById('propImage'), 
+                  previewImg = document.getElementById('imagePreview'), 
+                  uploadBox = document.getElementById('uploadBox'), 
+                  previewCont = document.getElementById('imagePreviewContainer'),
+                  imageUrlInput = document.getElementById('propImageUrl'),
+                  additionalFilesInput = document.getElementById('propAdditionalImages');
+
+            let selectedFile = null;
+            uploadBox.onclick = () => fileInput.click();
+            fileInput.onchange = (e) => { 
+                if (e.target.files[0]) { 
+                    selectedFile = e.target.files[0]; 
+                    const r = new FileReader(); 
+                    r.onload = (ev) => { 
+                        previewImg.src = ev.target.result; 
+                        uploadBox.style.display = 'none'; 
+                        previewCont.style.display = 'block'; 
+                    }; 
+                    r.readAsDataURL(selectedFile);
+                    // Clear URL input if file selected
+                    imageUrlInput.value = '';
+                }
+            };
+
+            document.getElementById('removeImageBtn').onclick = () => { 
+                selectedFile = null; 
+                fileInput.value = ''; 
+                existingImageUrl = null; 
+                uploadBox.style.display = 'block'; 
+                previewCont.style.display = 'none'; 
+                imageUrlInput.value = '';
+            };
+
+            // Allow URL input to act as main image (preview not automatically shown)
+            imageUrlInput.onchange = () => {
+                if (imageUrlInput.value && !selectedFile) {
+                    // Preview the URL image
+                    previewImg.src = imageUrlInput.value;
+                    uploadBox.style.display = 'none';
+                    previewCont.style.display = 'block';
+                    existingImageUrl = imageUrlInput.value; // will be used if no file
+                }
+            };
+            
+            document.getElementById('cancelEditBtn').onclick = () => { 
+                document.getElementById('postAdForm').reset(); 
+                document.getElementById('removeImageBtn').click(); 
+                additionalFilesInput.value = '';
+                editingPropertyId = null; 
+                existingAdditionalImages = [];
+                document.getElementById('formTitle').innerText = "Create a New Listing"; 
+                document.getElementById('submitBtn').innerHTML = 'Publish Listing <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>';
+                document.getElementById('editModeBanner').style.display = 'none'; 
+                formCard.style.display = 'none';
+                // Reset additional images info
+                document.querySelector('.additional-images-info').innerHTML = 'You can select multiple images. They will be shown in the property gallery (coming soon).';
+            };
+
+            document.getElementById('postAdForm').onsubmit = async (e) => {
+                e.preventDefault(); 
+                
+                // Main image: either file, URL, or nothing
+                if (!selectedFile && !imageUrlInput.value && !existingImageUrl) {
+                    // No main image - we'll save null and show placeholder later
+                    // No alert, proceed
+                }
+
+                const btn = document.getElementById('submitBtn'); 
+                btn.disabled = true; 
+                btn.innerHTML = 'Uploading... <i class="fa-solid fa-spinner fa-spin"></i>';
+                
+                try {
+                    // 1. Handle main image
+                    let finalImage = existingImageUrl || null;
+                    if (selectedFile) { 
+                        const imgRef = ref(storage, `almas_catalog/${Date.now()}_${selectedFile.name}`); 
+                        await uploadBytes(imgRef, selectedFile); 
+                        finalImage = await getDownloadURL(imgRef); 
+                    } else if (imageUrlInput.value) {
+                        finalImage = imageUrlInput.value;
+                    }
+
+                    // 2. Handle additional images
+                    let additionalUrls = [];
+                    if (additionalFilesInput.files.length > 0) {
+                        // Upload each additional file
+                        const uploadPromises = Array.from(additionalFilesInput.files).map(async (file) => {
+                            const fileRef = ref(storage, `almas_catalog/extra/${Date.now()}_${file.name}`);
+                            await uploadBytes(fileRef, file);
+                            return getDownloadURL(fileRef);
+                        });
+                        additionalUrls = await Promise.all(uploadPromises);
+                    } else {
+                        // Keep existing additional images if in edit mode and no new files
+                        additionalUrls = existingAdditionalImages;
+                    }
+                    
+                    const propData = { 
+                        title: document.getElementById('propTitle').value, 
+                        type: document.getElementById('propType').value, 
+                        price: Number(document.getElementById('propPrice').value), 
+                        location: document.getElementById('propLocation').value, 
+                        area: Number(document.getElementById('propArea').value), 
+                        bedrooms: Number(document.getElementById('propBeds').value), 
+                        bathrooms: Number(document.getElementById('propBaths').value), 
+                        contactPhone: document.getElementById('propPhone').value, 
+                        contactWhatsApp: document.getElementById('propWhatsApp').value, 
+                        imageUrl: finalImage,
+                        additionalImages: additionalUrls,
+                        lat: selectedLat, 
+                        lng: selectedLng 
+                    };
+                    
+                    if (editingPropertyId) {
+                        await updateDoc(doc(db, "properties", editingPropertyId), propData);
+                        showToast("Updated Successfully!");
+                    } else { 
+                        propData.createdAt = serverTimestamp(); 
+                        await addDoc(collection(db, "properties"), propData); 
+                        showToast("New Listing Published!");
+                    }
+                    
+                    document.getElementById('cancelEditBtn').click(); 
+                    fetchAllProperties();
+                } catch(err) { 
+                    console.error(err); 
+                    showToast("Upload Failed. " + err.message, "error"); 
+                    btn.disabled = false; 
+                    btn.innerHTML = 'Publish Listing';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
