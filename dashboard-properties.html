@@ -31,6 +31,17 @@
         .drive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
         .drive-img-item { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; background: #e2e8f0; }
         .drive-img-item:hover { border-color: var(--primary); transform: scale(1.02); }
+
+        /* Gallery Builder UI */
+        .image-preview-box { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); height: 140px; background: #f1f5f9; }
+        .image-preview-box.main-img { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
+        .image-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-main-badge { position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; font-size: 0.7rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .img-actions { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 5px; }
+        .img-action-btn { background: rgba(255,255,255,0.9); border: none; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .img-action-btn:hover { background: white; transform: scale(1.1); }
+        .btn-set-main { color: #eab308; }
+        .btn-remove-img { color: #ef4444; }
     </style>
 </head>
 <body>
@@ -46,8 +57,11 @@
     <div class="drive-modal" id="driveModal">
         <div class="drive-modal-content">
             <div class="drive-modal-header">
-                <h3><i class="fa-brands fa-google-drive" style="color: #0F9D58;"></i> Select Image from Drive</h3>
+                <h3><i class="fa-brands fa-google-drive" style="color: #0F9D58;"></i> Select Images from Drive</h3>
                 <button id="closeDriveModal" class="btn btn-outline" style="padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="padding: 10px 20px; background: #fefce8; color: #b45309; font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid var(--border);">
+                <i class="fa-solid fa-lightbulb"></i> Tip: You can click multiple images here to add them to your property gallery.
             </div>
             <div class="drive-grid" id="driveGrid">
                 <p style="grid-column: 1/-1; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading images from Drive...</p>
@@ -89,22 +103,20 @@
                 
                 <form id="postAdForm">
                     <div class="form-full input-group">
-                        <label>Main Image</label>
+                        <label>Property Images Gallery</label>
                         
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;" id="uploadOptions">
-                            <button type="button" id="uploadBtnTrigger" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-upload"></i> Upload New</button>
-                            <button type="button" id="browseDriveBtn" class="btn btn-outline" style="flex: 1;"><i class="fa-brands fa-google-drive"></i> Browse Drive</button>
+                            <button type="button" id="uploadBtnTrigger" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-upload"></i> Upload Local Files</button>
+                            <button type="button" id="browseDriveBtn" class="btn btn-outline" style="flex: 1;"><i class="fa-brands fa-google-drive"></i> Browse Google Drive</button>
                         </div>
                         
-                        <input type="file" id="propImage" accept="image/*" style="display: none;">
+                        <input type="file" id="propImage" accept="image/*" multiple style="display: none;">
                         
-                        <div id="imagePreviewContainer" style="display: none; position: relative;">
-                            <img id="imagePreview" src="" alt="Preview" style="width: 100%; height: 350px; object-fit: cover; border-radius: 16px;">
-                            <button type="button" id="removeImageBtn" style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; padding: 10px 15px; font-weight: 600; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-trash"></i> Remove Image</button>
-                        </div>
+                        <div id="imagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px;">
+                            </div>
                     </div>
 
-                    <div class="form-full input-group">
+                    <div class="form-full input-group" style="margin-top: 20px;">
                         <label>Listing Title</label>
                         <input type="text" id="propTitle" class="custom-input" placeholder="e.g. Modern Twinhouse in New Cairo" required>
                     </div>
@@ -151,7 +163,7 @@
         // --- API CONSTANTS ---
         const GOOGLE_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; 
         const DRIVE_API_KEY = "AIzaSyAw9VHVW8xRHM4bam_mr_XOM2rW3SeclHQ"; 
-        const DRIVE_FOLDER_ID = "1uchldJE0NtACac2gN52_GFVLnhHNcSUv"; 
+        const DRIVE_FOLDER_ID = "1caGYydQwljwFmvPXt4Mw1w0pPQEUsa-o"; 
 
         document.addEventListener("DOMContentLoaded", () => {
             function showToast(m, t='success'){ const tst=document.createElement('div'); tst.className='toast'; tst.innerHTML=`<i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> <span>${m}</span>`; document.getElementById('toastContainer').appendChild(tst); setTimeout(()=>tst.remove(), 3000); }
@@ -174,7 +186,6 @@
             const toggleBtn = document.getElementById('toggleFormBtn');
             let map, marker, selectedLat = null, selectedLng = null;
             let editingPropertyId = null; 
-            let existingImageUrl = null;
 
             function initMap() {
                 if(!map) {
@@ -219,7 +230,6 @@
                 document.querySelectorAll('.btn-edit').forEach(b => b.onclick = function() {
                     const data = JSON.parse(this.getAttribute('data-json')); 
                     editingPropertyId = this.getAttribute('data-id'); 
-                    existingImageUrl = data.imageUrl;
 
                     document.getElementById('propTitle').value = data.title || '';
                     document.getElementById('propType').value = data.type || 'Sale';
@@ -229,12 +239,19 @@
                     document.getElementById('propBeds').value = data.bedrooms || '';
                     document.getElementById('propBaths').value = data.bathrooms || '';
 
-                    if (existingImageUrl) {
-                        document.getElementById('imagePreview').src = existingImageUrl;
-                        showPreview();
-                    } else {
-                        document.getElementById('removeImageBtn').click(); 
+                    // Restore Gallery Images
+                    projectImages = [];
+                    mainImageIndex = 0;
+                    
+                    if (data.images && data.images.length > 0) {
+                        data.images.forEach((url, idx) => {
+                            projectImages.push({ type: 'existing', url: url });
+                            if (url === data.imageUrl) mainImageIndex = idx;
+                        });
+                    } else if (data.imageUrl) {
+                        projectImages.push({ type: 'existing', url: data.imageUrl });
                     }
+                    renderGalleryPreviews();
 
                     document.getElementById('formTitle').innerText = "Edit Company Listing"; 
                     document.getElementById('submitBtn').innerHTML = 'Update Listing <i class="fa-solid fa-check" style="margin-left: 8px;"></i>'; 
@@ -251,32 +268,61 @@
                     formCard.scrollIntoView({behavior: "smooth", block: "start"});
                 });
 
-                // Attach Delete Logic
                 document.querySelectorAll('.btn-delete').forEach(b => b.onclick = async function() { 
                     if(confirm("Delete this listing?")) { await deleteDoc(doc(db, "properties", this.getAttribute('data-id'))); fetchAllProperties(); }
                 });
             }
 
-            // --- IMAGE SELECTION (Upload vs Browse) ---
+            // --- MULTI-IMAGE GALLERY LOGIC ---
+            let projectImages = []; // Stores objects: { type: 'local', file: File, preview: string } OR { type: 'drive'/'existing', url: string }
+            let mainImageIndex = 0;
             const fileInput = document.getElementById('propImage');
-            const previewImg = document.getElementById('imagePreview');
-            const previewCont = document.getElementById('imagePreviewContainer');
-            const uploadOptions = document.getElementById('uploadOptions');
-            let selectedFile = null;
 
-            // Option 1: Upload New File
-            document.getElementById('uploadBtnTrigger').onclick = () => fileInput.click();
-            fileInput.onchange = (e) => { 
-                if (e.target.files[0]) { 
-                    selectedFile = e.target.files[0]; 
-                    existingImageUrl = null;
-                    const r = new FileReader(); 
-                    r.onload = (ev) => { previewImg.src = ev.target.result; showPreview(); }; 
-                    r.readAsDataURL(selectedFile);
-                }
+            // Render the Grid
+            window.renderGalleryPreviews = () => {
+                const grid = document.getElementById('imagesPreviewGrid');
+                grid.innerHTML = '';
+                
+                projectImages.forEach((imgObj, index) => {
+                    const isMain = index === mainImageIndex;
+                    const src = imgObj.type === 'local' ? imgObj.previewUrl : imgObj.url;
+                    
+                    grid.innerHTML += `
+                        <div class="image-preview-box ${isMain ? 'main-img' : ''}">
+                            <img src="${src}">
+                            ${isMain ? '<span class="img-main-badge">Main Image</span>' : ''}
+                            <div class="img-actions">
+                                ${!isMain ? `<button type="button" class="img-action-btn btn-set-main" onclick="setMainImage(${index})" title="Make Main Image"><i class="fa-solid fa-star"></i></button>` : ''}
+                                <button type="button" class="img-action-btn btn-remove-img" onclick="removeImage(${index})" title="Remove Image"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
             };
 
-            // Option 2: Browse Google Drive
+            // Expose logic to window so HTML inline onclicks work
+            window.setMainImage = (idx) => { mainImageIndex = idx; window.renderGalleryPreviews(); };
+            window.removeImage = (idx) => { 
+                projectImages.splice(idx, 1); 
+                if(mainImageIndex >= projectImages.length) mainImageIndex = Math.max(0, projectImages.length - 1);
+                window.renderGalleryPreviews(); 
+            };
+
+            // Local Upload Logic
+            document.getElementById('uploadBtnTrigger').onclick = () => fileInput.click();
+            fileInput.onchange = (e) => { 
+                Array.from(e.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        projectImages.push({ type: 'local', file: file, previewUrl: ev.target.result });
+                        window.renderGalleryPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                });
+                fileInput.value = ''; // Reset input
+            };
+
+            // Drive Gallery Logic
             const driveModal = document.getElementById('driveModal');
             document.getElementById('browseDriveBtn').onclick = () => {
                 driveModal.classList.add('active');
@@ -286,73 +332,48 @@
 
             function fetchDriveFiles() {
                 const endpoint = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_FOLDER_ID}'+in+parents&fields=files(id,name,mimeType)&key=${DRIVE_API_KEY}`;
-                
                 fetch(endpoint)
                     .then(res => res.json())
                     .then(data => {
                         const grid = document.getElementById('driveGrid');
                         grid.innerHTML = '';
-                        
                         const imageFiles = data.files ? data.files.filter(f => f.mimeType.startsWith('image/')) : [];
                         
                         if(imageFiles.length > 0) {
                             imageFiles.forEach(file => {
-                                // THE FIX: Using the secret thumbnail endpoint that avoids hotlink blocks!
                                 const safeHotlinkUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
-                                
                                 const img = document.createElement('img');
                                 img.src = safeHotlinkUrl;
                                 img.className = 'drive-img-item';
                                 
-                                // ERROR CATCHER: If Google STILL blocks it, show exactly why
                                 img.onerror = function() {
                                     this.onerror = null; 
                                     this.src = 'https://via.placeholder.com/150x120/ffcccc/ff0000?text=Make+Public';
-                                    console.error("Google blocked this image. Check the sharing settings of the specific file in Google Drive.");
                                 };
 
                                 img.onclick = () => {
-                                    // Prevent selecting a broken image
-                                    if(img.src.includes('via.placeholder.com')) {
-                                        alert("You cannot select a broken image. Please go to Google Drive and ensure this specific image file is set to 'Anyone with the link can view'.");
-                                        return;
-                                    }
-
-                                    selectedFile = null; 
-                                    existingImageUrl = safeHotlinkUrl; 
-                                    previewImg.src = safeHotlinkUrl;
-                                    showPreview();
-                                    driveModal.classList.remove('active');
+                                    if(img.src.includes('via.placeholder.com')) return alert("You cannot select a broken image.");
+                                    projectImages.push({ type: 'drive', url: safeHotlinkUrl });
+                                    window.renderGalleryPreviews();
+                                    showToast("Image added to gallery!");
+                                    // Notice: Modal stays open so you can click multiple!
                                 };
                                 grid.appendChild(img);
                             });
                         } else {
-                            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No images found. Ensure folder is public!</p>';
+                            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No images found.</p>';
                         }
                     })
                     .catch(err => {
                         console.error('Drive Error:', err);
-                        document.getElementById('driveGrid').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load images. Please check your folder sharing permissions.</p>';
+                        document.getElementById('driveGrid').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load images.</p>';
                     });
             }
 
-            function showPreview() {
-                uploadOptions.style.display = 'none';
-                previewCont.style.display = 'block';
-            }
-
-            document.getElementById('removeImageBtn').onclick = () => { 
-                selectedFile = null; 
-                existingImageUrl = null;
-                fileInput.value = ''; 
-                uploadOptions.style.display = 'flex'; 
-                previewCont.style.display = 'none'; 
-            };
-            
             // Cancel Edit
             document.getElementById('cancelEditBtn').onclick = () => { 
                 document.getElementById('postAdForm').reset(); 
-                document.getElementById('removeImageBtn').click(); 
+                projectImages = []; mainImageIndex = 0; window.renderGalleryPreviews();
                 editingPropertyId = null; 
                 document.getElementById('formTitle').innerText = "Create a New Listing"; 
                 document.getElementById('submitBtn').innerHTML = 'Publish Listing <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>';
@@ -363,30 +384,43 @@
             // --- FORM SUBMISSION LOGIC ---
             document.getElementById('postAdForm').onsubmit = async (e) => {
                 e.preventDefault(); 
+                
+                if (projectImages.length === 0) {
+                    return showToast("Please select at least one property image.", "error");
+                }
+
                 const btn = document.getElementById('submitBtn'); 
                 btn.disabled = true; 
                 btn.innerHTML = 'Saving... <i class="fa-solid fa-spinner fa-spin"></i>';
                 
                 try {
-                    let finalImage = existingImageUrl;
+                    let finalUrls = [];
 
-                    if (selectedFile) {
-                        const base64Data = await new Promise((res) => {
-                            const r = new FileReader();
-                            r.onload = () => res(r.result.split(',')[1]); 
-                            r.readAsDataURL(selectedFile);
-                        });
-
-                        const response = await fetch(GOOGLE_SCRIPT_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'text/plain' },
-                            body: JSON.stringify({ filename: selectedFile.name, mimeType: selectedFile.type, base64: base64Data }),
-                            redirect: "follow"
-                        });
-                        const result = await response.json();
-                        if (result.status === 'success') finalImage = result.url;
-                        else throw new Error("Drive Upload Failed");
+                    // Loop through the gallery. If it's a local file, upload it. If Drive/Existing, just keep the URL.
+                    for (let i = 0; i < projectImages.length; i++) {
+                        const imgObj = projectImages[i];
+                        
+                        if (imgObj.type === 'drive' || imgObj.type === 'existing') {
+                            finalUrls.push(imgObj.url);
+                        } else if (imgObj.type === 'local') {
+                            const base64Data = imgObj.previewUrl.split(',')[1];
+                            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'text/plain' },
+                                body: JSON.stringify({ filename: imgObj.file.name, mimeType: imgObj.file.type, base64: base64Data }),
+                                redirect: "follow"
+                            });
+                            const result = await response.json();
+                            if (result.status === 'success') {
+                                finalUrls.push(result.url);
+                            } else {
+                                throw new Error("Local Image Upload Failed.");
+                            }
+                        }
                     }
+
+                    // Extract the selected main image using the mainImageIndex
+                    const designatedMainImage = finalUrls[mainImageIndex];
 
                     const propData = { 
                         title: document.getElementById('propTitle').value, 
@@ -396,7 +430,8 @@
                         area: Number(document.getElementById('propArea').value), 
                         bedrooms: Number(document.getElementById('propBeds').value), 
                         bathrooms: Number(document.getElementById('propBaths').value), 
-                        imageUrl: finalImage,
+                        imageUrl: designatedMainImage, // The one with the yellow star!
+                        images: finalUrls, // Entire array of photos
                         lat: selectedLat, 
                         lng: selectedLng
                     };
