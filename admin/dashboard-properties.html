@@ -13,7 +13,7 @@
     <style>
         .prop-card { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; background: white; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .prop-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(14, 165, 233, 0.1); border-color: var(--primary-light); }
-        .prop-card img { width: 100%; height: 220px; object-fit: cover; }
+        .prop-card img { width: 100%; height: 220px; object-fit: cover; background: #f1f5f9; }
         .prop-card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
         .prop-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
         .badge-sale { background: #e0f2fe; color: var(--primary-dark); }
@@ -22,7 +22,26 @@
         .prop-price { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 10px 0; }
         .prop-card-actions { margin-top: auto; display: flex; gap: 10px; border-top: 1px solid var(--border); padding-top: 15px; }
         .btn-small { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .additional-images-info { font-size: 0.85rem; color: var(--text-gray); margin-top: 5px; }
+        
+        /* Drive Gallery Modal Styles */
+        .drive-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; align-items: center; justify-content: center; }
+        .drive-modal.active { display: flex; }
+        .drive-modal-content { background: white; width: 90%; max-width: 800px; height: 80vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .drive-modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .drive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
+        .drive-img-item { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; background: #e2e8f0; }
+        .drive-img-item:hover { border-color: var(--primary); transform: scale(1.02); }
+
+        /* Gallery Builder UI */
+        .image-preview-box { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); height: 140px; background: #f1f5f9; }
+        .image-preview-box.main-img { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); }
+        .image-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .img-main-badge { position: absolute; top: 8px; left: 8px; background: var(--primary); color: white; font-size: 0.7rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+        .img-actions { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 5px; }
+        .img-action-btn { background: rgba(255,255,255,0.9); border: none; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .img-action-btn:hover { background: white; transform: scale(1.1); }
+        .btn-set-main { color: #eab308; }
+        .btn-remove-img { color: #ef4444; }
     </style>
 </head>
 <body>
@@ -34,6 +53,21 @@
         <h3 class="loader-text">Loading Posts...</h3>
     </div>
     <div class="toast-container" id="toastContainer"></div>
+
+    <div class="drive-modal" id="driveModal">
+        <div class="drive-modal-content">
+            <div class="drive-modal-header">
+                <h3><i class="fa-brands fa-google-drive" style="color: #0F9D58;"></i> Select Images from Drive</h3>
+                <button id="closeDriveModal" class="btn btn-outline" style="padding: 5px 10px;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="padding: 10px 20px; background: #fefce8; color: #b45309; font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid var(--border);">
+                <i class="fa-solid fa-lightbulb"></i> Tip: You can click multiple images here to add them to your property gallery.
+            </div>
+            <div class="drive-grid" id="driveGrid">
+                <p style="grid-column: 1/-1; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading images from Drive...</p>
+            </div>
+        </div>
+    </div>
 
     <aside class="sidebar">
         <div class="logo-area"><div><img src="images/almas.png" alt="Logo"> ALMAS</div></div>
@@ -59,7 +93,6 @@
         </header>
 
         <div class="content-body">
-
             <div class="glass-card" id="propertyFormCard" style="display: none;">
                 <div class="edit-mode-banner" id="editModeBanner">
                     <span><i class="fa-solid fa-pen-nib"></i> You are editing an existing company listing.</span>
@@ -69,32 +102,21 @@
                 <h3 id="formTitle" style="margin-bottom: 25px; color: var(--primary-dark);">Create a New Listing</h3>
                 
                 <form id="postAdForm">
-                    <!-- Main Image (Optional) -->
                     <div class="form-full input-group">
-                        <label>Main Image (Optional)</label>
-                        <div class="upload-area" id="uploadBox">
-                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 15px;"></i>
-                            <p style="font-weight: 600;">Click to upload a photo</p>
-                            <input type="file" id="propImage" accept="image/*" style="display: none;">
+                        <label>Property Images Gallery</label>
+                        
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;" id="uploadOptions">
+                            <button type="button" id="uploadBtnTrigger" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-upload"></i> Upload Local Files</button>
+                            <button type="button" id="browseDriveBtn" class="btn btn-outline" style="flex: 1;"><i class="fa-brands fa-google-drive"></i> Browse Google Drive</button>
                         </div>
-                        <div id="imagePreviewContainer" style="display: none; position: relative;">
-                            <img id="imagePreview" src="" alt="Preview" style="width: 100%; height: 350px; object-fit: cover; border-radius: 16px;">
-                            <button type="button" id="removeImageBtn" style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; padding: 10px 15px; font-weight: 600; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-trash"></i> Remove Image</button>
-                        </div>
-                        <div style="margin-top: 15px;">
-                            <label>Or enter image URL:</label>
-                            <input type="url" id="propImageUrl" class="custom-input" placeholder="https://example.com/image.jpg">
-                        </div>
+                        
+                        <input type="file" id="propImage" accept="image/*" multiple style="display: none;">
+                        
+                        <div id="imagesPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px;">
+                            </div>
                     </div>
 
-                    <!-- Additional Images (Multiple) -->
-                    <div class="form-full input-group">
-                        <label>Additional Images (Optional, multiple)</label>
-                        <input type="file" id="propAdditionalImages" class="custom-input" multiple accept="image/*">
-                        <small class="additional-images-info">You can select multiple images. They will be shown in the property gallery (coming soon).</small>
-                    </div>
-
-                    <div class="form-full input-group">
+                    <div class="form-full input-group" style="margin-top: 20px;">
                         <label>Listing Title</label>
                         <input type="text" id="propTitle" class="custom-input" placeholder="e.g. Modern Twinhouse in New Cairo" required>
                     </div>
@@ -112,8 +134,6 @@
                         <div class="input-group"><label>Total Area (m²)</label><input type="number" id="propArea" class="custom-input" placeholder="200" required></div>
                         <div class="input-group"><label>Bedrooms</label><input type="number" id="propBeds" class="custom-input" placeholder="3" required></div>
                         <div class="input-group"><label>Bathrooms</label><input type="number" id="propBaths" class="custom-input" placeholder="2" required></div>
-                        <div class="input-group"><label>Agent Phone (Optional Override)</label><input type="tel" id="propPhone" class="custom-input" placeholder="Leave blank for default"></div>
-                        <div class="input-group"><label>Agent WhatsApp (Optional)</label><input type="tel" id="propWhatsApp" class="custom-input" placeholder="Leave blank for default"></div>
                     </div>
 
                     <div class="form-full input-group" style="margin-top: 20px;">
@@ -131,16 +151,19 @@
                 <h3 style="margin-bottom: 15px; color: var(--text-dark);">Active Catalog</h3>
                 <div class="prop-grid" id="myPropertiesGrid">Loading properties...</div>
             </div>
-
         </div>
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
-        import { auth, db, storage } from "./almas.js";
+        import { auth, db } from "./almas.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc, collection, query, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        
+        // --- API CONSTANTS ---
+        const GOOGLE_SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; 
+        const DRIVE_API_KEY = "AIzaSyAw9VHVW8xRHM4bam_mr_XOM2rW3SeclHQ"; 
+        const DRIVE_FOLDER_ID = "1caGYydQwljwFmvPXt4Mw1w0pPQEUsa-o"; 
 
         document.addEventListener("DOMContentLoaded", () => {
             function showToast(m, t='success'){ const tst=document.createElement('div'); tst.className='toast'; tst.innerHTML=`<i class="fa-solid fa-circle-check" style="color:var(--primary);"></i> <span>${m}</span>`; document.getElementById('toastContainer').appendChild(tst); setTimeout(()=>tst.remove(), 3000); }
@@ -151,25 +174,18 @@
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 const role = userDoc.data().role;
                 if (role !== 'admin' && role !== 'employee') return window.location.href = "index.html";
-
                 document.getElementById('dashUserName').innerText = userDoc.data().fullName;
-                if (role === 'admin') {
-                    document.getElementById('dashUserRole').innerText = "Administrator";
-                    document.getElementById('navTeamBtn').style.display = 'flex';
-                } else {
-                    document.getElementById('dashUserRole').innerText = "Employee Portal";
-                    document.getElementById('roleIcon').className = "fa-solid fa-user-tie";
-                }
-
+                if (role === 'admin') document.getElementById('navTeamBtn').style.display = 'flex';
                 fetchAllProperties();
             });
 
             document.getElementById('dashLogoutBtn').onclick = () => signOut(auth).then(()=>window.location.href="almas-login.html");
 
-            // UI TOGGLES & MAP
+            // --- UI & MAP LOGIC ---
             const formCard = document.getElementById('propertyFormCard');
             const toggleBtn = document.getElementById('toggleFormBtn');
             let map, marker, selectedLat = null, selectedLng = null;
+            let editingPropertyId = null; 
 
             function initMap() {
                 if(!map) {
@@ -181,34 +197,25 @@
 
             toggleBtn.onclick = () => {
                 formCard.style.display = formCard.style.display === 'none' ? 'block' : 'none';
-                if(formCard.style.display === 'block') {
-                    initMap();
-                    formCard.scrollIntoView({behavior: "smooth", block: "start"});
-                }
+                if(formCard.style.display === 'block') { initMap(); formCard.scrollIntoView({behavior: "smooth"}); }
             };
 
-            let editingPropertyId = null, existingImageUrl = null, existingAdditionalImages = [];
-
-            // FETCH PROPERTIES
+            // --- FETCH & EDIT PROPERTIES ---
             async function fetchAllProperties() {
                 const grid = document.getElementById('myPropertiesGrid');
                 const q = query(collection(db, "properties"), orderBy("createdAt", "desc"));
                 const snap = await getDocs(q);
-                
-                grid.innerHTML = snap.empty ? '<p style="grid-column: 1/-1; text-align: center; color: var(--text-gray);">No properties in catalog yet.</p>' : '';
+                grid.innerHTML = snap.empty ? '<p style="grid-column: 1/-1; text-align: center;">No properties found.</p>' : '';
                 
                 snap.forEach(docSnap => {
                     const data = docSnap.data(), id = docSnap.id, img = data.imageUrl || 'images/back.jpg';
                     const badgeClass = data.type === 'Sale' ? 'badge-sale' : 'badge-rent';
 
                     grid.innerHTML += `
-                        <div class="prop-card" id="card-${id}">
-                            <img src="${img}">
+                        <div class="prop-card">
+                            <img src="${img}" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Blocked+by+Google'">
                             <div class="prop-card-body">
-                                <div>
-                                    <span class="prop-badge ${badgeClass}">For ${data.type}</span>
-                                    <span style="float: right; font-size:0.85rem; color: var(--text-gray); font-weight: 600;"><i class="fa-solid fa-location-dot"></i> ${data.location}</span>
-                                </div>
+                                <div><span class="prop-badge ${badgeClass}">For ${data.type}</span></div>
                                 <h4 class="prop-title">${data.title}</h4>
                                 <div class="prop-price">${data.price.toLocaleString()} EGP</div>
                                 <div class="prop-card-actions">
@@ -219,39 +226,32 @@
                         </div>`;
                 });
 
+                // Attach Edit Logic
                 document.querySelectorAll('.btn-edit').forEach(b => b.onclick = function() {
                     const data = JSON.parse(this.getAttribute('data-json')); 
                     editingPropertyId = this.getAttribute('data-id'); 
-                    existingImageUrl = data.imageUrl;
-                    existingAdditionalImages = data.additionalImages || [];
 
-                    // Fill main fields
-                    document.getElementById('propTitle').value = data.title;
-                    document.getElementById('propType').value = data.type;
-                    document.getElementById('propPrice').value = data.price;
-                    document.getElementById('propLocation').value = data.location;
-                    document.getElementById('propArea').value = data.area;
-                    document.getElementById('propBeds').value = data.bedrooms;
-                    document.getElementById('propBaths').value = data.bathrooms;
-                    document.getElementById('propPhone').value = data.contactPhone || '';
-                    document.getElementById('propWhatsApp').value = data.contactWhatsApp || '';
+                    document.getElementById('propTitle').value = data.title || '';
+                    document.getElementById('propType').value = data.type || 'Sale';
+                    document.getElementById('propPrice').value = data.price || '';
+                    document.getElementById('propLocation').value = data.location || '';
+                    document.getElementById('propArea').value = data.area || '';
+                    document.getElementById('propBeds').value = data.bedrooms || '';
+                    document.getElementById('propBaths').value = data.bathrooms || '';
 
-                    // Handle main image preview
-                    if (existingImageUrl) {
-                        document.getElementById('imagePreview').src = existingImageUrl;
-                        document.getElementById('uploadBox').style.display = 'none';
-                        document.getElementById('imagePreviewContainer').style.display = 'block';
-                    } else {
-                        document.getElementById('removeImageBtn').click(); // reset
+                    // Restore Gallery Images
+                    projectImages = [];
+                    mainImageIndex = 0;
+                    
+                    if (data.images && data.images.length > 0) {
+                        data.images.forEach((url, idx) => {
+                            projectImages.push({ type: 'existing', url: url });
+                            if (url === data.imageUrl) mainImageIndex = idx;
+                        });
+                    } else if (data.imageUrl) {
+                        projectImages.push({ type: 'existing', url: data.imageUrl });
                     }
-
-                    // Show additional images count
-                    const additionalInfo = document.querySelector('.additional-images-info');
-                    if (existingAdditionalImages.length) {
-                        additionalInfo.innerHTML = `${existingAdditionalImages.length} additional image(s) saved. Upload new ones to replace.`;
-                    } else {
-                        additionalInfo.innerHTML = 'No additional images saved.';
-                    }
+                    renderGalleryPreviews();
 
                     document.getElementById('formTitle').innerText = "Edit Company Listing"; 
                     document.getElementById('submitBtn').innerHTML = 'Update Listing <i class="fa-solid fa-check" style="margin-left: 8px;"></i>'; 
@@ -260,8 +260,7 @@
                     formCard.style.display = 'block';
                     initMap();
                     if(data.lat && data.lng) { 
-                        selectedLat = data.lat; 
-                        selectedLng = data.lng; 
+                        selectedLat = data.lat; selectedLng = data.lng; 
                         if(marker) map.removeLayer(marker); 
                         marker = L.marker([data.lat, data.lng]).addTo(map); 
                         map.setView([data.lat, data.lng], 15); 
@@ -270,112 +269,159 @@
                 });
 
                 document.querySelectorAll('.btn-delete').forEach(b => b.onclick = async function() { 
-                    if(confirm("Are you sure you want to permanently delete this listing?")) { 
-                        await deleteDoc(doc(db, "properties", this.getAttribute('data-id'))); 
-                        showToast("Listing deleted."); 
-                        fetchAllProperties(); 
-                    }
+                    if(confirm("Delete this listing?")) { await deleteDoc(doc(db, "properties", this.getAttribute('data-id'))); fetchAllProperties(); }
                 });
             }
 
-            // FORM LOGIC
-            const fileInput = document.getElementById('propImage'), 
-                  previewImg = document.getElementById('imagePreview'), 
-                  uploadBox = document.getElementById('uploadBox'), 
-                  previewCont = document.getElementById('imagePreviewContainer'),
-                  imageUrlInput = document.getElementById('propImageUrl'),
-                  additionalFilesInput = document.getElementById('propAdditionalImages');
+            // --- MULTI-IMAGE GALLERY LOGIC ---
+            let projectImages = []; // Stores objects: { type: 'local', file: File, preview: string } OR { type: 'drive'/'existing', url: string }
+            let mainImageIndex = 0;
+            const fileInput = document.getElementById('propImage');
 
-            let selectedFile = null;
-            uploadBox.onclick = () => fileInput.click();
+            // Render the Grid
+            window.renderGalleryPreviews = () => {
+                const grid = document.getElementById('imagesPreviewGrid');
+                grid.innerHTML = '';
+                
+                projectImages.forEach((imgObj, index) => {
+                    const isMain = index === mainImageIndex;
+                    const src = imgObj.type === 'local' ? imgObj.previewUrl : imgObj.url;
+                    
+                    grid.innerHTML += `
+                        <div class="image-preview-box ${isMain ? 'main-img' : ''}">
+                            <img src="${src}">
+                            ${isMain ? '<span class="img-main-badge">Main Image</span>' : ''}
+                            <div class="img-actions">
+                                ${!isMain ? `<button type="button" class="img-action-btn btn-set-main" onclick="setMainImage(${index})" title="Make Main Image"><i class="fa-solid fa-star"></i></button>` : ''}
+                                <button type="button" class="img-action-btn btn-remove-img" onclick="removeImage(${index})" title="Remove Image"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            };
+
+            // Expose logic to window so HTML inline onclicks work
+            window.setMainImage = (idx) => { mainImageIndex = idx; window.renderGalleryPreviews(); };
+            window.removeImage = (idx) => { 
+                projectImages.splice(idx, 1); 
+                if(mainImageIndex >= projectImages.length) mainImageIndex = Math.max(0, projectImages.length - 1);
+                window.renderGalleryPreviews(); 
+            };
+
+            // Local Upload Logic
+            document.getElementById('uploadBtnTrigger').onclick = () => fileInput.click();
             fileInput.onchange = (e) => { 
-                if (e.target.files[0]) { 
-                    selectedFile = e.target.files[0]; 
-                    const r = new FileReader(); 
-                    r.onload = (ev) => { 
-                        previewImg.src = ev.target.result; 
-                        uploadBox.style.display = 'none'; 
-                        previewCont.style.display = 'block'; 
-                    }; 
-                    r.readAsDataURL(selectedFile);
-                    // Clear URL input if file selected
-                    imageUrlInput.value = '';
-                }
+                Array.from(e.target.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        projectImages.push({ type: 'local', file: file, previewUrl: ev.target.result });
+                        window.renderGalleryPreviews();
+                    };
+                    reader.readAsDataURL(file);
+                });
+                fileInput.value = ''; // Reset input
             };
 
-            document.getElementById('removeImageBtn').onclick = () => { 
-                selectedFile = null; 
-                fileInput.value = ''; 
-                existingImageUrl = null; 
-                uploadBox.style.display = 'block'; 
-                previewCont.style.display = 'none'; 
-                imageUrlInput.value = '';
+            // Drive Gallery Logic
+            const driveModal = document.getElementById('driveModal');
+            document.getElementById('browseDriveBtn').onclick = () => {
+                driveModal.classList.add('active');
+                fetchDriveFiles();
             };
+            document.getElementById('closeDriveModal').onclick = () => driveModal.classList.remove('active');
 
-            // Allow URL input to act as main image (preview not automatically shown)
-            imageUrlInput.onchange = () => {
-                if (imageUrlInput.value && !selectedFile) {
-                    // Preview the URL image
-                    previewImg.src = imageUrlInput.value;
-                    uploadBox.style.display = 'none';
-                    previewCont.style.display = 'block';
-                    existingImageUrl = imageUrlInput.value; // will be used if no file
-                }
-            };
-            
+            function fetchDriveFiles() {
+                const endpoint = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_FOLDER_ID}'+in+parents&fields=files(id,name,mimeType)&key=${DRIVE_API_KEY}`;
+                fetch(endpoint)
+                    .then(res => res.json())
+                    .then(data => {
+                        const grid = document.getElementById('driveGrid');
+                        grid.innerHTML = '';
+                        const imageFiles = data.files ? data.files.filter(f => f.mimeType.startsWith('image/')) : [];
+                        
+                        if(imageFiles.length > 0) {
+                            imageFiles.forEach(file => {
+                                const safeHotlinkUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w1000`;
+                                const img = document.createElement('img');
+                                img.src = safeHotlinkUrl;
+                                img.className = 'drive-img-item';
+                                
+                                img.onerror = function() {
+                                    this.onerror = null; 
+                                    this.src = 'https://via.placeholder.com/150x120/ffcccc/ff0000?text=Make+Public';
+                                };
+
+                                img.onclick = () => {
+                                    if(img.src.includes('via.placeholder.com')) return alert("You cannot select a broken image.");
+                                    projectImages.push({ type: 'drive', url: safeHotlinkUrl });
+                                    window.renderGalleryPreviews();
+                                    showToast("Image added to gallery!");
+                                    // Notice: Modal stays open so you can click multiple!
+                                };
+                                grid.appendChild(img);
+                            });
+                        } else {
+                            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No images found.</p>';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Drive Error:', err);
+                        document.getElementById('driveGrid').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: red;">Failed to load images.</p>';
+                    });
+            }
+
+            // Cancel Edit
             document.getElementById('cancelEditBtn').onclick = () => { 
                 document.getElementById('postAdForm').reset(); 
-                document.getElementById('removeImageBtn').click(); 
-                additionalFilesInput.value = '';
+                projectImages = []; mainImageIndex = 0; window.renderGalleryPreviews();
                 editingPropertyId = null; 
-                existingAdditionalImages = [];
                 document.getElementById('formTitle').innerText = "Create a New Listing"; 
                 document.getElementById('submitBtn').innerHTML = 'Publish Listing <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>';
                 document.getElementById('editModeBanner').style.display = 'none'; 
                 formCard.style.display = 'none';
-                // Reset additional images info
-                document.querySelector('.additional-images-info').innerHTML = 'You can select multiple images. They will be shown in the property gallery (coming soon).';
             };
 
+            // --- FORM SUBMISSION LOGIC ---
             document.getElementById('postAdForm').onsubmit = async (e) => {
                 e.preventDefault(); 
                 
-                // Main image: either file, URL, or nothing
-                if (!selectedFile && !imageUrlInput.value && !existingImageUrl) {
-                    // No main image - we'll save null and show placeholder later
-                    // No alert, proceed
+                if (projectImages.length === 0) {
+                    return showToast("Please select at least one property image.", "error");
                 }
 
                 const btn = document.getElementById('submitBtn'); 
                 btn.disabled = true; 
-                btn.innerHTML = 'Uploading... <i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.innerHTML = 'Saving... <i class="fa-solid fa-spinner fa-spin"></i>';
                 
                 try {
-                    // 1. Handle main image
-                    let finalImage = existingImageUrl || null;
-                    if (selectedFile) { 
-                        const imgRef = ref(storage, `almas_catalog/${Date.now()}_${selectedFile.name}`); 
-                        await uploadBytes(imgRef, selectedFile); 
-                        finalImage = await getDownloadURL(imgRef); 
-                    } else if (imageUrlInput.value) {
-                        finalImage = imageUrlInput.value;
+                    let finalUrls = [];
+
+                    // Loop through the gallery. If it's a local file, upload it. If Drive/Existing, just keep the URL.
+                    for (let i = 0; i < projectImages.length; i++) {
+                        const imgObj = projectImages[i];
+                        
+                        if (imgObj.type === 'drive' || imgObj.type === 'existing') {
+                            finalUrls.push(imgObj.url);
+                        } else if (imgObj.type === 'local') {
+                            const base64Data = imgObj.previewUrl.split(',')[1];
+                            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'text/plain' },
+                                body: JSON.stringify({ filename: imgObj.file.name, mimeType: imgObj.file.type, base64: base64Data }),
+                                redirect: "follow"
+                            });
+                            const result = await response.json();
+                            if (result.status === 'success') {
+                                finalUrls.push(result.url);
+                            } else {
+                                throw new Error("Local Image Upload Failed.");
+                            }
+                        }
                     }
 
-                    // 2. Handle additional images
-                    let additionalUrls = [];
-                    if (additionalFilesInput.files.length > 0) {
-                        // Upload each additional file
-                        const uploadPromises = Array.from(additionalFilesInput.files).map(async (file) => {
-                            const fileRef = ref(storage, `almas_catalog/extra/${Date.now()}_${file.name}`);
-                            await uploadBytes(fileRef, file);
-                            return getDownloadURL(fileRef);
-                        });
-                        additionalUrls = await Promise.all(uploadPromises);
-                    } else {
-                        // Keep existing additional images if in edit mode and no new files
-                        additionalUrls = existingAdditionalImages;
-                    }
-                    
+                    // Extract the selected main image using the mainImageIndex
+                    const designatedMainImage = finalUrls[mainImageIndex];
+
                     const propData = { 
                         title: document.getElementById('propTitle').value, 
                         type: document.getElementById('propType').value, 
@@ -384,30 +430,30 @@
                         area: Number(document.getElementById('propArea').value), 
                         bedrooms: Number(document.getElementById('propBeds').value), 
                         bathrooms: Number(document.getElementById('propBaths').value), 
-                        contactPhone: document.getElementById('propPhone').value, 
-                        contactWhatsApp: document.getElementById('propWhatsApp').value, 
-                        imageUrl: finalImage,
-                        additionalImages: additionalUrls,
+                        imageUrl: designatedMainImage, // The one with the yellow star!
+                        images: finalUrls, // Entire array of photos
                         lat: selectedLat, 
-                        lng: selectedLng 
+                        lng: selectedLng
                     };
-                    
+
                     if (editingPropertyId) {
                         await updateDoc(doc(db, "properties", editingPropertyId), propData);
-                        showToast("Updated Successfully!");
-                    } else { 
-                        propData.createdAt = serverTimestamp(); 
+                        showToast("Listing Updated Successfully!");
+                    } else {
+                        propData.createdAt = serverTimestamp();
                         await addDoc(collection(db, "properties"), propData); 
-                        showToast("New Listing Published!");
+                        showToast("Listing Published Successfully!");
                     }
                     
-                    document.getElementById('cancelEditBtn').click(); 
+                    document.getElementById('cancelEditBtn').click();
                     fetchAllProperties();
+
                 } catch(err) { 
                     console.error(err); 
-                    showToast("Upload Failed. " + err.message, "error"); 
+                    showToast("Error publishing listing.", "error"); 
+                } finally {
                     btn.disabled = false; 
-                    btn.innerHTML = 'Publish Listing';
+                    btn.innerHTML = 'Publish Listing <i class=\"fa-solid fa-arrow-right\" style=\"margin-left: 8px;\"></i>';
                 }
             };
         });
